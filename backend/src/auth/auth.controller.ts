@@ -1,4 +1,4 @@
-import { Controller, Post,Body,UnauthorizedException } from "@nestjs/common";
+import { Controller, Post, Body, UnauthorizedException, Inject } from "@nestjs/common";
 import { AuthService } from "./auth.service.js";
 
 //DTO (Data transfer Object): define la forma de los datos de entrada
@@ -8,7 +8,12 @@ interface LoginDto{
 }
 @Controller('auth')
 export class AuthController{
-    constructor(private readonly authService: AuthService){}
+    constructor(
+    @Inject(AuthService)
+    private readonly authService: AuthService
+) {
+    console.log('AuthService inyectado:', this.authService);
+}
     //POST /auth/login
     //Recibe {username,password} y devuelve {token, usuario}
     @Post('login')
@@ -19,4 +24,5 @@ export class AuthController{
         }
         return this.authService.login(credenciales.username, credenciales.password)
     }
+    
 }

@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as fs from 'fs';
 import { fileURLToPath } from 'url';
 import * as path from 'path';
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { privateDecrypt } from 'crypto';
 
 export interface Usuario{ //creamos la interfaz de usuario donde difinimos la estructura que debe tener un objeto de tipo usuario
