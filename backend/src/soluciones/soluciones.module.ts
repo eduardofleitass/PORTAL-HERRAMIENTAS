@@ -1,9 +1,11 @@
-import { Module } from "@nestjs/common";
-import { SolucionesController } from "./soluciones.controller.js";
-import { SolcionesService } from "./soluciones.service.js";
+import { Module } from '@nestjs/common';
+import { SolucionesController } from './soluciones.controller.js';
+import { SolucionesService } from './soluciones.service.js';
+import { AuthModule } from '../auth/auth.module.js';
 
 @Module({
-    controllers: [SolucionesController],
-    providers: [SolcionesService],
+  imports: [AuthModule],
+  controllers: [SolucionesController],
+  providers: [SolucionesService],
 })
-export class SolucionesModule{}
+export class SolucionesModule {}
