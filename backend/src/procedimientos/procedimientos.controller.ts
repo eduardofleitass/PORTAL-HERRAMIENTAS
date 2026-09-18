@@ -24,6 +24,16 @@ export class ProcedimientosController {
     // Si no, devuelve todos
     return this.procedimientosService.findAll();
   }
+  // POST /procedimientos/buscar
+  // Recibe una consulta en lenguaje natural y devuelve procedimientos relevantes
+  @Post('buscar')
+  search(@Body() body: { q: string }): Procedimiento[] {
+    // Si no viene nada en la consulta, devuelve un array vacio
+    if (!body.q || body.q.trim() === '') {
+      return [];
+    }
+    return this.procedimientosService.search(body.q);
+  }
 
   // @Get(':id') = GET /procedimientos/1
   // Los dos puntos indican que es un parametro de la URL

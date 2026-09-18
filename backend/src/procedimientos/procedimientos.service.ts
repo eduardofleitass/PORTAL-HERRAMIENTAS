@@ -129,4 +129,22 @@ export class ProcedimientosService {
     this.writeFile(procedimientos);
     return { message: `Procedimiento con id ${id} eliminado correctamente` };
   }
+
+  // Busca procedimientos que coincidan con palabras clave
+  search(q: string): Procedimiento[] {
+    const terminos = q.toLowerCase().split(' ').filter(t => t.length > 0);
+    const todos = this.readFile();
+
+    return todos.filter((p) => {
+      const texto = [
+        p.titulo,
+        p.modulo,
+        p.nivel,
+        p.tiempo_estimado,
+        ...p.pasos.map(paso => paso.descripcion)
+      ].join(' ').toLowerCase();
+
+      return terminos.some((termino) => texto.includes(termino));
+    });
+  }
 }
