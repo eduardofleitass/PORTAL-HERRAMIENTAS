@@ -44,7 +44,7 @@ function Dashboard(){
           <h1>Portal de Herramientas</h1>
           {usuario && (
             <p>
-              Bienvenido, <strong>{usuario.nombre}</strong> ({usuario.rol})
+            <strong>{usuario.nombre}</strong> ({usuario.rol})
             </p>
           )}
         </div>

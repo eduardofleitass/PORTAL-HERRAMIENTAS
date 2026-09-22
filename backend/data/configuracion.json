@@ -17,11 +17,8 @@
     { "id": 20, "nombre": "Eliminado", "es_final": true }
   ],
   "modulos_portal": [
-    { "id": "conocimientos", "nombre": "Base de conocimientos", "icono": "book", "descripcion": "Articulos y guias del equipo de soporte" },
-    { "id": "errores", "nombre": "Buscar errores", "icono": "search", "descripcion": "Errores comunes con sus diagnosticos" },
-    { "id": "reportes", "nombre": "Generar reporte", "icono": "file-text", "descripcion": "Plantillas para reportes de soporte" },
-    { "id": "procedimientos", "nombre": "Procedimientos", "icono": "list", "descripcion": "Pasos paso a paso para casos frecuentes" },
-    { "id": "herramientas", "nombre": "Herramientas", "icono": "tool", "descripcion": "Utilidades y scripts de diagnostico" },
+    { "id": "errores", "nombre": "Listar Errores", "icono": "search", "descripcion": "Errores comunes con sus diagnosticos" },
+    { "id": "procedimientos", "nombre": "Procedimientos", "icono": "list", "descripcion": "Paso a paso para casos frecuentes" },
     { "id": "documentacion", "nombre": "Documentacion", "icono": "file", "descripcion": "Manuales y politicas del sistema" }
   ],
   "sucursales": [
