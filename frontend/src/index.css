@@ -314,3 +314,145 @@ body {
   border-radius: 4px;
   cursor: pointer;
 }
+
+/* ===== ERRORES ===== */
+
+.errores-page {
+  padding: 1rem 2rem;
+}
+
+.filtros-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+/* Lista de errores */
+.lista-errores {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.error-item {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.error-item:hover {
+  border-color: #dc2626;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15);
+}
+
+.error-item.activo {
+  border-color: #dc2626;
+  background-color: #fef2f2;
+}
+
+.error-codigo {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: #dc2626;
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+}
+
+.error-item h3 {
+  margin: 0 0 0.5rem 0;
+  color: #1f2937;
+  font-size: 1.1rem;
+}
+
+.error-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+}
+
+.error-meta .modulo {
+  color: #2563eb;
+  font-weight: 500;
+}
+
+/* Colores de frecuencia */
+.frecuencia {
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.freq-alta {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.freq-media {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.freq-baja {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+/* Detalle de error */
+.detalle-error {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.detalle-error h2 {
+  margin: 0 0 1rem 0;
+  color: #1e3a5f;
+}
+
+.detalle-seccion {
+  margin-bottom: 1.5rem;
+}
+
+.detalle-seccion h4 {
+  color: #374151;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.detalle-seccion p {
+  color: #4b5563;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.detalle-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.tag {
+  background-color: #e5e7eb;
+  color: #374151;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+
+.detalle-error button {
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
