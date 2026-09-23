@@ -170,3 +170,147 @@ body {
   color: #6b7280;
   font-size: 0.95rem;
 }
+
+.procedimientos-page {
+  padding: 1rem 2rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.page-header h1 {
+  color: #1e3a5f;
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.header-actions button {
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.header-actions button:hover {
+  background-color: #4b5563;
+}
+
+/* Filtro */
+.filtro-container {
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filtro-container select {
+  padding: 0.4rem;
+  font-size: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+}
+
+/* Lista de procedimientos */
+.lista-procedimientos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.procedimiento-item {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.procedimiento-item:hover {
+  border-color: #2563eb;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+}
+
+.procedimiento-item.activo {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+}
+
+.procedimiento-item h3 {
+  margin: 0 0 0.5rem 0;
+  color: #1f2937;
+  font-size: 1.1rem;
+}
+
+.procedimiento-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+}
+
+.procedimiento-meta .modulo {
+  color: #2563eb;
+  font-weight: 500;
+}
+
+.procedimiento-meta .nivel {
+  color: #059669;
+}
+
+.procedimiento-meta .tiempo {
+  color: #6b7280;
+}
+
+/* Detalle */
+.detalle-procedimiento {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.detalle-procedimiento h2 {
+  margin: 0 0 0.5rem 0;
+  color: #1e3a5f;
+}
+
+.detalle-meta {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.pasos-lista {
+  padding-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.pasos-lista li {
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+
+.detalle-procedimiento button {
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
