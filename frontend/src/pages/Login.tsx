@@ -151,7 +151,7 @@ function Login() {
           </div>
           {error && <p className="error">{error}</p>}
           <button type="submit" disabled={cargando}>
-            {cargando ? "Cargando..." : "Entrar"}
+            {cargando ? "Cargando..." : "Iniciar Sesion"}
           </button>
         </form>
         <p className="login-footer"></p>

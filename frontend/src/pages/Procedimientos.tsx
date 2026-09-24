@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { Pencil, Trash2 } from "lucide-react";
 
 interface Paso {
   orden: number;
@@ -221,16 +222,22 @@ function Procedimientos() {
           {filtrados.length === 0 && <p>No hay procedimientos para este modulo.</p>}
           {filtrados.map((proc) => (
             <div key={proc.id} className={`procedimiento-item ${seleccionado?.id === proc.id ? "activo" : ""}`} onClick={() => setSeleccionado(proc)}>
-              <h3>{proc.titulo}</h3>
-              <div className="procedimiento-meta">
-                <span className="modulo">{proc.modulo}</span>
-                <span className="nivel">{proc.nivel}</span>
-                <span className="tiempo">{proc.tiempo_estimado}</span>
+              <div className="item-contenido">
+                <h3>{proc.titulo}</h3>
+                <div className="procedimiento-meta">
+                  <span className="modulo">{proc.modulo}</span>
+                  <span className="nivel">{proc.nivel}</span>
+                  <span className="tiempo">{proc.tiempo_estimado}</span>
+                </div>
               </div>
               {usuario?.rol === "admin" && (
                 <div className="item-acciones" onClick={(e) => e.stopPropagation()}>
-                  <button className="btn-editar" onClick={() => iniciarEdicion(proc)}>Editar</button>
-                  <button className="btn-eliminar" onClick={() => eliminarProcedimiento(proc.id)}>Eliminar</button>
+                  <button className="btn-icon btn-icon-editar" title="Editar" onClick={() => iniciarEdicion(proc)}>
+                    <Pencil size={16} />
+                  </button>
+                  <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={() => eliminarProcedimiento(proc.id)}>
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               )}
             </div>
@@ -253,8 +260,12 @@ function Procedimientos() {
           </ol>
           {usuario?.rol === "admin" && (
             <div className="detalle-acciones">
-              <button className="btn-editar" onClick={() => iniciarEdicion(seleccionado)}>Editar</button>
-              <button className="btn-eliminar" onClick={() => eliminarProcedimiento(seleccionado.id)}>Eliminar</button>
+              <button className="btn-icon btn-icon-editar" title="Editar" onClick={() => iniciarEdicion(seleccionado)}>
+                <Pencil size={16} />
+              </button>
+              <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={() => eliminarProcedimiento(seleccionado.id)}>
+                <Trash2 size={16} />
+              </button>
             </div>
           )}
           <button onClick={() => setSeleccionado(null)}>Cerrar detalle</button>

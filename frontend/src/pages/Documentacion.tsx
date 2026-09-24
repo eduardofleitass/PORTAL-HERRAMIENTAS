@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { Trash2 } from "lucide-react";
 
 interface Documento {
   id: number;
@@ -153,7 +154,9 @@ function Documentacion() {
                   Descargar
                 </a>
                 {usuario?.rol === "admin" && (
-                  <button className="btn-eliminar" onClick={() => eliminarDocumento(doc.id)}>Eliminar</button>
+                  <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={() => eliminarDocumento(doc.id)}>
+                    <Trash2 size={16} />
+                  </button>
                 )}
               </div>
             </div>

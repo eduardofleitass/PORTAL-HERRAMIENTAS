@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { Pencil, Trash2 } from "lucide-react";
 
 interface Error {
   id: number;
@@ -220,16 +221,22 @@ function Errores() {
           {filtrados.length === 0 && <p>No hay errores con esos filtros.</p>}
           {filtrados.map((err) => (
             <div key={err.id} className={`error-item ${seleccionado?.id === err.id ? "activo" : ""}`} onClick={() => setSeleccionado(err)}>
-              <div className="error-codigo">{err.codigo}</div>
-              <h3>{err.titulo}</h3>
-              <div className="error-meta">
-                <span className="modulo">{err.modulo_afectado}</span>
-                <span className={`frecuencia freq-${err.frecuencia}`}>{err.frecuencia}</span>
+              <div className="item-contenido">
+                <div className="error-codigo">{err.codigo}</div>
+                <h3>{err.titulo}</h3>
+                <div className="error-meta">
+                  <span className="modulo">{err.modulo_afectado}</span>
+                  <span className={`frecuencia freq-${err.frecuencia}`}>{err.frecuencia}</span>
+                </div>
               </div>
               {usuario?.rol === "admin" && (
                 <div className="item-acciones" onClick={(e) => e.stopPropagation()}>
-                  <button className="btn-editar" onClick={() => iniciarEdicion(err)}>Editar</button>
-                  <button className="btn-eliminar" onClick={() => eliminarError(err.id)}>Eliminar</button>
+                  <button className="btn-icon btn-icon-editar" title="Editar" onClick={() => iniciarEdicion(err)}>
+                    <Pencil size={16} />
+                  </button>
+                  <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={() => eliminarError(err.id)}>
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               )}
             </div>
@@ -247,8 +254,12 @@ function Errores() {
           <div className="detalle-tags">{seleccionado.tags.map((tag) => <span key={tag} className="tag">{tag}</span>)}</div>
           {usuario?.rol === "admin" && (
             <div className="detalle-acciones">
-              <button className="btn-editar" onClick={() => iniciarEdicion(seleccionado)}>Editar</button>
-              <button className="btn-eliminar" onClick={() => eliminarError(seleccionado.id)}>Eliminar</button>
+              <button className="btn-icon btn-icon-editar" title="Editar" onClick={() => iniciarEdicion(seleccionado)}>
+                <Pencil size={16} />
+              </button>
+              <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={() => eliminarError(seleccionado.id)}>
+                <Trash2 size={16} />
+              </button>
             </div>
           )}
           <button onClick={() => setSeleccionado(null)}>Cerrar detalle</button>
