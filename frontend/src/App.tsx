@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Procedimientos from "./pages/Procedimientos";
 import Errores from "./pages/Errores";
+import Documentacion from "./pages/Documentacion";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
 import PublicRoute from "./components/PublicRoute";
@@ -45,6 +46,15 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <Errores />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/documentacion"
+          element={
+            <ProtectedRoute>
+              <Documentacion />
             </ProtectedRoute>
           }
         />

@@ -5,9 +5,10 @@ import { ProcedimientosModule } from './procedimientos/procedimientos.module.js'
 import { ErroresModule } from './errores/errores.module.js';
 import { ConfiguracionModule } from './configuracion/configuracion.module.js';
 import { AuthModule } from './auth/auth.module.js';
+import { DocumentacionModule } from './documentacion/documentacion.module.js';
 
 @Module({
-  imports: [ProcedimientosModule,ErroresModule,ConfiguracionModule,AuthModule],
+  imports: [ProcedimientosModule,ErroresModule,ConfiguracionModule,AuthModule,DocumentacionModule],
   controllers: [AppController],
   providers: [AppService],
 })
