@@ -30,8 +30,8 @@ function Sidebar() {
     <aside className="sidebar">
       <div className="sidebar-top">
         <div className="sidebar-brand">
-          <img src="/portalherramientas.png" alt="Logo" />
-          <span>Portal EPEM</span>
+          {/* <img src="/logo2.png" alt="Logo" /> */}
+          <span>Portal de herramientas</span>
         </div>
       </div>
 
