@@ -102,12 +102,21 @@ function Procedimientos() {
     setErrorGuardar("");
     setGuardando(true);
 
+    // Leemos el token directamente de localStorage para asegurarnos
+    const tokenActual = localStorage.getItem("token");
+
+    if (!tokenActual) {
+      setErrorGuardar("No hay sesion activa. Por favor inicia sesion de nuevo.");
+      setGuardando(false);
+      return;
+    }
+
     try {
       const respuesta = await fetch("http://localhost:3001/procedimientos", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${tokenActual}`
         },
         body: JSON.stringify({
           titulo: nuevoTitulo,
