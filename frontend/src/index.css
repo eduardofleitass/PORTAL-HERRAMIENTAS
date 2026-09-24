@@ -260,9 +260,16 @@ body {
 }
 
 .sidebar-icon {
-  font-size: 1.1rem;
-  width: 24px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  color: var(--text-muted);
+  transition: var(--transition);
+}
+
+.sidebar-link.active .sidebar-icon {
+  color: var(--accent-blue);
 }
 
 .sidebar-bottom {
@@ -313,9 +320,9 @@ body {
   align-items: center;
   gap: 0.5rem;
   padding: 0.6rem 1rem;
-  background: rgba(239,68,68,0.1);
+  background: rgba(239,68,68,0.08);
   color: var(--accent-red);
-  border: 1px solid rgba(239,68,68,0.2);
+  border: 1px solid rgba(239,68,68,0.15);
   border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 0.85rem;

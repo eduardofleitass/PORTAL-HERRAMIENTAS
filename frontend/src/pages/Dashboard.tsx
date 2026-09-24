@@ -1,6 +1,14 @@
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import {
+  ClipboardList,
+  Search,
+  BookOpen,
+  Settings,
+  AlertCircle
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 interface Modulo {
   id: string;
@@ -30,16 +38,16 @@ function Dashboard(){
     cargaModulos();
   }, []);
 
-  // Iconos para cada modulo
-  function iconoModulo(nombre: string): string {
-    const mapa: Record<string, string> = {
-      "Procedimientos": "📋",
-      "Errores": "🔍",
-      "Documentacion": "📚",
-      "Soluciones": "✅",
-      "Configuracion": "⚙️"
+  // Iconos de Lucide para cada modulo
+  function iconoModulo(nombre: string): LucideIcon {
+    const mapa: Record<string, LucideIcon> = {
+      "Procedimientos": ClipboardList,
+      "Errores": Search,
+      "Documentacion": BookOpen,
+      "Soluciones": Settings,
+      "Configuracion": Settings
     };
-    return mapa[nombre] || "⚠️";
+    return mapa[nombre] || AlertCircle;
   }
 
   return (
@@ -48,7 +56,7 @@ function Dashboard(){
         <h1>Bienvenido al Portal</h1>
         {usuario && (
           <>
-            <span className="rol-badge">{usuario.rol}</span>
+            <span className="rol-badge">{usuario.nombre}</span>
             <p>Selecciona un modulo para comenzar</p>
           </>
         )}
@@ -59,17 +67,22 @@ function Dashboard(){
 
       {!loading && !error && (
         <div className="cards-grid">
-          {modulos.map((modulo) => (
-            <div
-              key={modulo.id}
-              className="card"
-              onClick={() => navigate(`/${modulo.id}`)}
-            >
-              <div className="card-icon">{iconoModulo(modulo.nombre)}</div>
-              <h3>{modulo.nombre}</h3>
-              <p>{modulo.descripcion}</p>
-            </div>
-          ))}
+          {modulos.map((modulo) => {
+            const Icon = iconoModulo(modulo.nombre);
+            return (
+              <div
+                key={modulo.id}
+                className="card"
+                onClick={() => navigate(`/${modulo.id}`)}
+              >
+                <div className="card-icon">
+                  <Icon size={22} strokeWidth={2} />
+                </div>
+                <h3>{modulo.nombre}</h3>
+                <p>{modulo.descripcion}</p>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
