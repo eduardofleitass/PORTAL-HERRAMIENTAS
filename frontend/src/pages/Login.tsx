@@ -122,57 +122,40 @@ function Login() {
   // Lo que devuelve el componente y que será mostrado en pantalla
   return (
 
-    // Contenedor principal del formulario de login
-    <div className="login-container">
-      <h2>Iniciar Sesión</h2>
-      <form onSubmit={manejarLogin}>
-        <div> 
-          <label>Usuario:</label>
-          <input
-            // Indicamos que es un campo de texto
-            type="text"
-
-            // El valor del input está conectado al estado username
-            value={username}
-
-            // Cada vez que el usuario escribe algo,
-            // actualizamos el estado username
-            onChange={(e) => setUsername(e.target.value)}
-
-            // El campo es obligatorio
-            required
-          />
+    <div className="login-page">
+      <div className="login-container">
+        <div className="login-logo">
+          <img src="/portalherramientas.png" alt="Portal de Herramientas" />
         </div>
-        <div>
-          <label>Contraseña:</label>
-
-          <input
-            // type password oculta los caracteres escritos
-            type="password"
-
-            // El valor está conectado al estado password
-            value={password}
-
-            // Actualizamos password cada vez que el usuario escribe
-            onChange={(e) => setPassword(e.target.value)}
-
-            // El campo es obligatorio
-            required
-          />
-        </div>
-        {error && <p className="error">{error}</p>}
-        <button
-          // Indicamos que este botón envía el formulario
-          type="submit"
-
-          // Deshabilitamos el botón mientras se está procesando
-          disabled={cargando}
-        >
-          {cargando ? "Cargando..." : "Entrar"}
-
-        </button>
-
-      </form>
+        <h2>Portal de Herramientas</h2>
+        <form onSubmit={manejarLogin}>
+          <div> 
+            <label>Usuario</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              placeholder="admin"
+            />
+          </div>
+          <div>
+            <label>Contraseña</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="••••"
+            />
+          </div>
+          {error && <p className="error">{error}</p>}
+          <button type="submit" disabled={cargando}>
+            {cargando ? "Cargando..." : "Entrar"}
+          </button>
+        </form>
+        <p className="login-footer">EPEM - Portal de Soporte TIC</p>
+      </div>
     </div>
   );
 }
