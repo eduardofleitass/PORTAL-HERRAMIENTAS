@@ -511,3 +511,122 @@ body {
 .nav-logout:hover {
   background-color: #b91c1c;
 }
+
+/* ===== FORMULARIO PROCEDIMIENTO ===== */
+
+.btn-nuevo {
+  background-color: #059669;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+}
+
+.btn-nuevo:hover {
+  background-color: #047857;
+}
+
+.formulario-procedimiento {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.formulario-procedimiento h3 {
+  margin: 0 0 1rem 0;
+  color: #1e3a5f;
+}
+
+.form-grupo {
+  margin-bottom: 1rem;
+}
+
+.form-grupo label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.form-grupo input,
+.form-grupo select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.form-pasos {
+  margin-bottom: 1rem;
+}
+
+.paso-input {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.paso-input span {
+  font-weight: bold;
+  color: #6b7280;
+  min-width: 1.5rem;
+}
+
+.paso-input input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+}
+
+.paso-input button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.btn-agregar {
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px dashed #2563eb;
+  padding: 0.4rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.form-botones {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.form-botones button[type="submit"] {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.form-botones button[type="submit"]:disabled {
+  background-color: #9ca3af;
+}
+
+.btn-cancelar {
+  background-color: #e5e7eb;
+  color: #374151;
+  border: none;
+  padding: 0.6rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+}

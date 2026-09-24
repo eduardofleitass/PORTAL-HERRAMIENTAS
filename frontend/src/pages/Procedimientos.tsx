@@ -20,7 +20,7 @@ interface Procedimiento {
 
 function Procedimientos() {
   // Estados
-  const { usuario } = useAuth();
+  const { usuario, token } = useAuth();
   const navigate = useNavigate();
 
   // Guarda la lista completa que viene del backend
@@ -35,6 +35,18 @@ function Procedimientos() {
   // Estados de carga y error
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // === ESTADOS DEL FORMULARIO ===
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [nuevoTitulo, setNuevoTitulo] = useState("");
+  const [nuevoModulo, setNuevoModulo] = useState("");
+  const [nuevoNivel, setNuevoNivel] = useState("basico");
+  const [nuevoTiempo, setNuevoTiempo] = useState("");
+  const [nuevosPasos, setNuevosPasos] = useState<Paso[]>([
+    { orden: 1, descripcion: "" }
+  ]);
+  const [guardando, setGuardando] = useState(false);
+  const [errorGuardar, setErrorGuardar] = useState("");
 
   // useEffect: pedimos los procedimientos al backend al cargar
   useEffect(() => {
@@ -53,7 +65,6 @@ function Procedimientos() {
   }, []);
 
   // Extraemos los modulos UNICOS para el dropdown de filtro
-  // new Set() elimina duplicados. Array.from() convierte de Set a Array.
   const modulosUnicos = Array.from(
     new Set(procedimientos.map((p) => p.modulo))
   );
@@ -62,6 +73,75 @@ function Procedimientos() {
   const filtrados = moduloFiltro
     ? procedimientos.filter((p) => p.modulo === moduloFiltro)
     : procedimientos;
+
+  // === FUNCIONES DEL FORMULARIO ===
+
+  function agregarPaso() {
+    setNuevosPasos((prev) => [
+      ...prev,
+      { orden: prev.length + 1, descripcion: "" }
+    ]);
+  }
+
+  function cambiarPaso(index: number, descripcion: string) {
+    setNuevosPasos((prev) =>
+      prev.map((p, i) => (i === index ? { ...p, descripcion } : p))
+    );
+  }
+
+  function quitarPaso(index: number) {
+    setNuevosPasos((prev) =>
+      prev
+        .filter((_, i) => i !== index)
+        .map((p, i) => ({ ...p, orden: i + 1 }))
+    );
+  }
+
+  async function guardarProcedimiento(evento: React.FormEvent) {
+    evento.preventDefault();
+    setErrorGuardar("");
+    setGuardando(true);
+
+    try {
+      const respuesta = await fetch("http://localhost:3001/procedimientos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          titulo: nuevoTitulo,
+          modulo: nuevoModulo,
+          nivel: nuevoNivel,
+          tiempo_estimado: nuevoTiempo,
+          pasos: nuevosPasos.filter((p) => p.descripcion.trim() !== "")
+        })
+      });
+
+      if (!respuesta.ok) {
+        const datos = await respuesta.json();
+        setErrorGuardar(datos.message || "Error al guardar");
+        setGuardando(false);
+        return;
+      }
+
+      const creado = await respuesta.json();
+      setProcedimientos((prev) => [...prev, creado]);
+
+      // Limpiamos formulario
+      setNuevoTitulo("");
+      setNuevoModulo("");
+      setNuevoNivel("basico");
+      setNuevoTiempo("");
+      setNuevosPasos([{ orden: 1, descripcion: "" }]);
+      setMostrarFormulario(false);
+
+    } catch (err) {
+      setErrorGuardar("No se pudo conectar con el servidor");
+    } finally {
+      setGuardando(false);
+    }
+  }
 
   // Funcion para volver al Dashboard
   function volver() {
@@ -79,6 +159,104 @@ function Procedimientos() {
         </div>
       </header>
 
+      {/* Boton + Nuevo */}
+      {!mostrarFormulario && !loading && usuario?.rol === "admin" && (
+        <button
+          className="btn-nuevo"
+          onClick={() => setMostrarFormulario(true)}
+        >
+          + Nuevo Procedimiento
+        </button>
+      )}
+
+      {/* Formulario de creacion */}
+      {mostrarFormulario && (
+        <form className="formulario-procedimiento" onSubmit={guardarProcedimiento}>
+          <h3>Nuevo Procedimiento</h3>
+
+          {errorGuardar && <p className="error">{errorGuardar}</p>}
+
+          <div className="form-grupo">
+            <label>Titulo:</label>
+            <input
+              type="text"
+              value={nuevoTitulo}
+              onChange={(e) => setNuevoTitulo(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="form-grupo">
+            <label>Modulo:</label>
+            <input
+              type="text"
+              value={nuevoModulo}
+              onChange={(e) => setNuevoModulo(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="form-grupo">
+            <label>Nivel:</label>
+            <select
+              value={nuevoNivel}
+              onChange={(e) => setNuevoNivel(e.target.value)}
+            >
+              <option value="basico">Basico</option>
+              <option value="intermedio">Intermedio</option>
+              <option value="avanzado">Avanzado</option>
+            </select>
+          </div>
+
+          <div className="form-grupo">
+            <label>Tiempo estimado:</label>
+            <input
+              type="text"
+              value={nuevoTiempo}
+              onChange={(e) => setNuevoTiempo(e.target.value)}
+              placeholder="Ej: 10 minutos"
+              required
+            />
+          </div>
+
+          <div className="form-pasos">
+            <label>Pasos:</label>
+            {nuevosPasos.map((paso, index) => (
+              <div key={index} className="paso-input">
+                <span>{paso.orden}.</span>
+                <input
+                  type="text"
+                  value={paso.descripcion}
+                  onChange={(e) => cambiarPaso(index, e.target.value)}
+                  placeholder={`Descripcion del paso ${paso.orden}`}
+                />
+                {nuevosPasos.length > 1 && (
+                  <button type="button" onClick={() => quitarPaso(index)}>
+                    ❌
+                  </button>
+                )}
+              </div>
+            ))}
+            <button type="button" className="btn-agregar" onClick={agregarPaso}>
+              + Agregar paso
+            </button>
+          </div>
+
+          <div className="form-botones">
+            <button type="submit" disabled={guardando}>
+              {guardando ? "Guardando..." : "Guardar"}
+            </button>
+            <button
+              type="button"
+              className="btn-cancelar"
+              onClick={() => setMostrarFormulario(false)}
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      )}
+
       {/* Filtro por modulo */}
       <div className="filtro-container">
         <label>Filtrar por modulo:</label>
@@ -86,7 +264,7 @@ function Procedimientos() {
           value={moduloFiltro}
           onChange={(e) => {
             setModuloFiltro(e.target.value);
-            setSeleccionado(null); // Limpiamos el seleccionado al cambiar filtro
+            setSeleccionado(null);
           }}
         >
           <option value="">Todos los modulos</option>
