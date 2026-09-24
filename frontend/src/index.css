@@ -710,3 +710,51 @@ body {
 .btn-descargar:hover {
   background-color: #1d4ed8;
 }
+
+/* ===== ACCIONES: EDITAR / ELIMINAR ===== */
+
+.item-acciones {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.detalle-acciones {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.documento-acciones {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.btn-editar {
+  background-color: #f59e0b;
+  color: white;
+  border: none;
+  padding: 0.3rem 0.7rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.btn-editar:hover {
+  background-color: #d97706;
+}
+
+.btn-eliminar {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.3rem 0.7rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.btn-eliminar:hover {
+  background-color: #dc2626;
+}

@@ -37,40 +37,22 @@ function Documentacion() {
         const respuesta = await fetch("http://localhost:3001/documentacion");
         const datos = await respuesta.json();
         setDocumentos(datos);
-      } catch (err) {
-        setError("No se pudieron cargar los documentos");
-      } finally {
-        setLoading(false);
-      }
+      } catch { setError("No se pudieron cargar los documentos"); }
+      finally { setLoading(false); }
     }
     cargar();
   }, []);
 
-  const seccionesUnicas = Array.from(
-    new Set(documentos.map((d) => d.seccion))
-  );
-
-  const filtrados = seccionFiltro
-    ? documentos.filter((d) => d.seccion === seccionFiltro)
-    : documentos;
+  const seccionesUnicas = Array.from(new Set(documentos.map((d) => d.seccion)));
+  const filtrados = seccionFiltro ? documentos.filter((d) => d.seccion === seccionFiltro) : documentos;
 
   async function guardarDocumento(evento: React.FormEvent) {
     evento.preventDefault();
-    setErrorGuardar("");
-    setGuardando(true);
+    setErrorGuardar(""); setGuardando(true);
 
     const token = localStorage.getItem("token");
-    if (!token) {
-      setErrorGuardar("No hay sesion activa.");
-      setGuardando(false);
-      return;
-    }
-
-    if (!archivo) {
-      setErrorGuardar("Debe seleccionar un archivo");
-      setGuardando(false);
-      return;
-    }
+    if (!token) { setErrorGuardar("No hay sesion."); setGuardando(false); return; }
+    if (!archivo) { setErrorGuardar("Debe seleccionar un archivo"); setGuardando(false); return; }
 
     try {
       const formData = new FormData();
@@ -80,40 +62,30 @@ function Documentacion() {
       formData.append("seccion", seccion);
 
       const respuesta = await fetch("http://localhost:3001/documentacion", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        },
-        body: formData
+        method: "POST", headers: { "Authorization": `Bearer ${token}` }, body: formData
       });
-
-      if (!respuesta.ok) {
-        const datos = await respuesta.json();
-        setErrorGuardar(datos.message || "Error al subir");
-        setGuardando(false);
-        return;
-      }
-
+      if (!respuesta.ok) { const datos = await respuesta.json(); setErrorGuardar(datos.message || "Error"); setGuardando(false); return; }
       const creado = await respuesta.json();
       setDocumentos((prev) => [...prev, creado]);
-
-      // Limpiar
-      setTitulo("");
-      setDescripcion("");
-      setSeccion("");
-      setArchivo(null);
-      setMostrarFormulario(false);
-
-    } catch (err) {
-      setErrorGuardar("No se pudo conectar con el servidor");
-    } finally {
-      setGuardando(false);
-    }
+      setTitulo(""); setDescripcion(""); setSeccion(""); setArchivo(null); setMostrarFormulario(false);
+    } catch { setErrorGuardar("Error de conexion"); }
+    finally { setGuardando(false); }
   }
 
-  function volver() {
-    navigate("/");
+  async function eliminarDocumento(id: number) {
+    if (!confirm("¿Seguro que queres eliminar este documento?")) return;
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      const respuesta = await fetch(`http://localhost:3001/documentacion/${id}`, {
+        method: "DELETE", headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (!respuesta.ok) { alert("Error al eliminar"); return; }
+      setDocumentos((prev) => prev.filter((d) => d.id !== id));
+    } catch { alert("Error de conexion"); }
   }
+
+  function volver() { navigate("/"); }
 
   return (
     <div className="documentacion-page">
@@ -127,9 +99,7 @@ function Documentacion() {
 
       {/* Boton + Nuevo */}
       {!mostrarFormulario && !loading && usuario?.rol === "admin" && (
-        <button className="btn-nuevo" onClick={() => setMostrarFormulario(true)}>
-          + Subir Documento
-        </button>
+        <button className="btn-nuevo" onClick={() => setMostrarFormulario(true)}>+ Subir Documento</button>
       )}
 
       {/* Formulario */}
@@ -137,28 +107,19 @@ function Documentacion() {
         <form className="formulario-procedimiento" onSubmit={guardarDocumento}>
           <h3>Subir Documento</h3>
           {errorGuardar && <p className="error">{errorGuardar}</p>}
-
           <div className="form-grupo"><label>Titulo:</label>
             <input type="text" value={titulo} onChange={(e) => setTitulo(e.target.value)} required />
           </div>
-
           <div className="form-grupo"><label>Descripcion:</label>
             <input type="text" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
           </div>
-
           <div className="form-grupo"><label>Seccion:</label>
             <input type="text" value={seccion} onChange={(e) => setSeccion(e.target.value)} required placeholder="Ej: Manual de Sistemas" />
           </div>
-
           <div className="form-grupo"><label>Archivo:</label>
-            <input
-              type="file"
-              onChange={(e) => setArchivo(e.target.files ? e.target.files[0] : null)}
-              required
-            />
+            <input type="file" onChange={(e) => setArchivo(e.target.files ? e.target.files[0] : null)} required />
             {archivo && <p className="archivo-seleccionado">Seleccionado: {archivo.name}</p>}
           </div>
-
           <div className="form-botones">
             <button type="submit" disabled={guardando}>{guardando ? "Subiendo..." : "Subir"}</button>
             <button type="button" className="btn-cancelar" onClick={() => setMostrarFormulario(false)}>Cancelar</button>
@@ -175,7 +136,6 @@ function Documentacion() {
         </select>
       </div>
 
-      {/* Estados */}
       {loading && <p className="loading">Cargando documentos...</p>}
       {error && <p className="error">{error}</p>}
 
@@ -192,14 +152,14 @@ function Documentacion() {
                 <span>{doc.nombreArchivo}</span>
                 <span>{(doc.tamano / 1024).toFixed(1)} KB</span>
               </div>
-              <a
-                href={`http://localhost:3001${doc.rutaArchivo}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-descargar"
-              >
-                Descargar
-              </a>
+              <div className="documento-acciones">
+                <a href={`http://localhost:3001${doc.rutaArchivo}`} target="_blank" rel="noopener noreferrer" className="btn-descargar">
+                  Descargar
+                </a>
+                {usuario?.rol === "admin" && (
+                  <button className="btn-eliminar" onClick={() => eliminarDocumento(doc.id)}>Eliminar</button>
+                )}
+              </div>
             </div>
           ))}
         </div>

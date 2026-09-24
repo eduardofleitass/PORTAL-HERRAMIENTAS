@@ -93,43 +93,5 @@
     "modulo": "SIFEN",
     "nivel": "intermedio",
     "tiempo_estimado": "10 minutos"
-  },
-  {
-    "id": 4,
-    "titulo": "test",
-    "modulo": "test",
-    "nivel": "basico",
-    "tiempo_estimado": "5 min",
-    "pasos": [
-      {
-        "orden": 1,
-        "descripcion": "paso 1"
-      }
-    ]
-  },
-  {
-    "id": 5,
-    "titulo": "prueba",
-    "modulo": "prueba",
-    "nivel": "basico",
-    "tiempo_estimado": "prueba",
-    "pasos": [
-      {
-        "orden": 1,
-        "descripcion": "prueba"
-      },
-      {
-        "orden": 2,
-        "descripcion": "prueba"
-      },
-      {
-        "orden": 3,
-        "descripcion": "prueba"
-      },
-      {
-        "orden": 4,
-        "descripcion": "prueba"
-      }
-    ]
   }
 ]
