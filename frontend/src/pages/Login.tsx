@@ -136,7 +136,7 @@ function Login() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              placeholder="admin"
+              placeholder="introduzca su usuario"
             />
           </div>
           <div>
