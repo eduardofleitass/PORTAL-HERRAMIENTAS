@@ -34,7 +34,7 @@ export class DocumentacionController {
   @Roles("admin")
   @UseInterceptors(FileInterceptor("archivo"))
   create(
-    @UploadedFile() archivo: Express.Multer.File,
+    @UploadedFile() archivo: { buffer: Buffer; originalname: string; size: number; mimetype: string },
     @Body() body: { titulo: string; descripcion: string; seccion: string }
   ) {
     if (!archivo) {
