@@ -5,6 +5,7 @@ import Procedimientos from "./pages/Procedimientos";
 import Errores from "./pages/Errores";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
+import PublicRoute from "./components/PublicRoute";
 
 function AppContent() {
   const location = useLocation();
@@ -18,7 +19,7 @@ function AppContent() {
 
       <Routes>
         {/* Login PUBLICO */}
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
 
         {/* Rutas PROTEGIDAS */}
         <Route
