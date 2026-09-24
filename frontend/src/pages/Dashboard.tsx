@@ -39,7 +39,7 @@ function Dashboard(){
       "Soluciones": "✅",
       "Configuracion": "⚙️"
     };
-    return mapa[nombre] || "📦";
+    return mapa[nombre] || "⚠️";
   }
 
   return (

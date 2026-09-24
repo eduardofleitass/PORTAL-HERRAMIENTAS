@@ -158,10 +158,6 @@ function Procedimientos() {
     <div className="procedimientos-page">
       <header className="page-header">
         <h1>Procedimientos</h1>
-        <div className="header-actions">
-          <button onClick={volver}>← Volver al Dashboard</button>
-          {usuario && <span>{usuario.nombre}</span>}
-        </div>
       </header>
 
       {/* Boton + Nuevo */}

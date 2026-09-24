@@ -91,10 +91,6 @@ function Documentacion() {
     <div className="documentacion-page">
       <header className="page-header">
         <h1>Documentacion</h1>
-        <div className="header-actions">
-          <button onClick={volver}>← Volver al Dashboard</button>
-          {usuario && <span>{usuario.nombre}</span>}
-        </div>
       </header>
 
       {/* Boton + Nuevo */}

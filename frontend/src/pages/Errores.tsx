@@ -146,10 +146,6 @@ function Errores() {
     <div className="errores-page">
       <header className="page-header">
         <h1>Buscar Errores</h1>
-        <div className="header-actions">
-          <button onClick={volver}>← Volver al Dashboard</button>
-          {usuario && <span>{usuario.nombre}</span>}
-        </div>
       </header>
 
       {/* Boton + Nuevo */}
