@@ -125,7 +125,7 @@ function Login() {
     <div className="login-page">
       <div className="login-container">
         <div className="login-logo">
-          <img src="/portalherramientas.png" alt="Portal de Herramientas" />
+          <img src="public/portalherramientas.png" alt="Portal de Herramientas" />
         </div>
         <h2>Portal de Herramientas</h2>
         <form onSubmit={manejarLogin}>
@@ -154,7 +154,7 @@ function Login() {
             {cargando ? "Cargando..." : "Entrar"}
           </button>
         </form>
-        <p className="login-footer">EPEM - Portal de Soporte TIC</p>
+        <p className="login-footer"></p>
       </div>
     </div>
   );
