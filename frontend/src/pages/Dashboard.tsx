@@ -9,7 +9,7 @@ interface Modulo {
 }
 function Dashboard(){
     // Obtenemos usuario y logout desde AuthContext
-  const {usuario , logout} = useAuth();
+  const {usuario} = useAuth();
   const navigate= useNavigate();
   const [modulos , setModulos] = useState<Modulo[]>([]); //modulos: guarda la lista de modulos que vienen del backend y empieza con un array vacio 
   const [loading,setLoading] = useState(true); //true mientras esperamos respuesta del backend
@@ -32,10 +32,10 @@ function Dashboard(){
       cargaModulos(); //ejecutamos la funcion que definimos
     }, []);
   //Funcion que ejecuta logout y redirige al login 
-  function cerrarSesion(){
-    logout();
-    navigate("/login")
-  }
+  // function cerrarSesion(){
+  //   logout();
+  //   navigate("/login")
+  // }
  return (
     <div className="dashboard-container">
       {/* Encabezado con bienvenida */}
@@ -48,7 +48,7 @@ function Dashboard(){
             </p>
           )}
         </div>
-        <button onClick={cerrarSesion}>Cerrar Sesion</button>
+        {/* <button onClick={cerrarSesion}>Cerrar Sesion</button> */}
       </header>
 
       {/* Si todavia estamos cargando, mostramos mensaje */}
