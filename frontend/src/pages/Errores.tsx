@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { Pencil, Trash2, RotateCcw } from "lucide-react";
 import ConfirmModal from "../components/ConfirmModal";
 
@@ -17,6 +18,7 @@ interface ErrorItem {
 
 function Errores() {
   const { usuario } = useAuth();
+  const toast = useToast();
 
   const [errores, setErrores] = useState<ErrorItem[]>([]);
   const [seleccionado, setSeleccionado] = useState<ErrorItem | null>(null);
@@ -105,6 +107,7 @@ function Errores() {
       const creado = await respuesta.json();
       setErrores((prev) => [...prev, creado]);
       cerrarFormulario();
+      toast.addToast("Error registrado correctamente", "success");
     } catch { setErrorGuardar("Error de conexion"); }
     finally { setGuardando(false); }
   }
@@ -131,6 +134,7 @@ function Errores() {
       const actualizado = await respuesta.json();
       setErrores((prev) => prev.map((e) => e.id === editandoId ? actualizado : e));
       cerrarFormulario();
+      toast.addToast("Cambios guardados", "success");
     } catch { setErrorGuardar("Error de conexion"); }
     finally { setGuardando(false); }
   }
@@ -142,10 +146,11 @@ function Errores() {
       const respuesta = await fetch(`http://localhost:3001/errores/${id}`, {
         method: "DELETE", headers: { "Authorization": `Bearer ${token}` }
       });
-      if (!respuesta.ok) { alert("Error al eliminar"); return; }
+      if (!respuesta.ok) { toast.addToast("Error al eliminar el error", "error"); return; }
       setErrores((prev) => prev.filter((e) => e.id !== id));
       setSeleccionado(null);
-    } catch { alert("Error de conexion"); }
+      toast.addToast("Error eliminado", "success");
+    } catch { toast.addToast("Error de conexion con el servidor", "error"); }
   }
 
   return (

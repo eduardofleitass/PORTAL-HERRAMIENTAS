@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { Pencil, Trash2, RotateCcw } from "lucide-react";
 import ConfirmModal from "../components/ConfirmModal";
 
@@ -19,6 +20,7 @@ interface Procedimiento {
 
 function Procedimientos() {
   const { usuario } = useAuth();
+  const toast = useToast();
 
   const [procedimientos, setProcedimientos] = useState<Procedimiento[]>([]);
   const [seleccionado, setSeleccionado] = useState<Procedimiento | null>(null);
@@ -95,6 +97,7 @@ function Procedimientos() {
       const creado = await respuesta.json();
       setProcedimientos((prev) => [...prev, creado]);
       cerrarFormulario();
+      toast.addToast("Procedimiento creado correctamente", "success");
     } catch { setErrorGuardar("Error de conexion"); }
     finally { setGuardando(false); }
   }
@@ -132,6 +135,7 @@ function Procedimientos() {
       const actualizado = await respuesta.json();
       setProcedimientos((prev) => prev.map((p) => p.id === editandoId ? actualizado : p));
       cerrarFormulario();
+      toast.addToast("Cambios guardados", "success");
     } catch { setErrorGuardar("Error de conexion"); }
     finally { setGuardando(false); }
   }
@@ -144,10 +148,11 @@ function Procedimientos() {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
-      if (!respuesta.ok) { alert("Error al eliminar"); return; }
+      if (!respuesta.ok) { toast.addToast("Error al eliminar el procedimiento", "error"); return; }
       setProcedimientos((prev) => prev.filter((p) => p.id !== id));
       setSeleccionado(null);
-    } catch { alert("Error de conexion"); }
+      toast.addToast("Procedimiento eliminado", "success");
+    } catch { toast.addToast("Error de conexion con el servidor", "error"); }
   }
 
   function cerrarFormulario() {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { Trash2, RotateCcw, Pencil } from "lucide-react";
 import ConfirmModal from "../components/ConfirmModal";
 
@@ -16,6 +17,7 @@ interface Documento {
 
 function Documentacion() {
   const { usuario } = useAuth();
+  const toast = useToast();
 
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [seleccionado, setSeleccionado] = useState<Documento | null>(null);
@@ -84,6 +86,7 @@ function Documentacion() {
       const creado = await respuesta.json();
       setDocumentos((prev) => [...prev, creado]);
       setTitulo(""); setDescripcion(""); setSeccion(""); setArchivo(null); setMostrarFormulario(false);
+      toast.addToast("Documento subido correctamente", "success");
     } catch { setErrorGuardar("Error de conexion"); }
     finally { setGuardando(false); }
   }
@@ -95,10 +98,11 @@ function Documentacion() {
       const respuesta = await fetch(`http://localhost:3001/documentacion/${id}`, {
         method: "DELETE", headers: { "Authorization": `Bearer ${token}` }
       });
-      if (!respuesta.ok) { alert("Error al eliminar"); return; }
+      if (!respuesta.ok) { toast.addToast("Error al eliminar el documento", "error"); return; }
       setDocumentos((prev) => prev.filter((d) => d.id !== id));
       setSeleccionado(null);
-    } catch { alert("Error de conexion"); }
+      toast.addToast("Documento eliminado", "success");
+    } catch { toast.addToast("Error de conexion con el servidor", "error"); }
   }
 
   function iniciarEdicion(doc: Documento) {
@@ -120,7 +124,7 @@ function Documentacion() {
     e.preventDefault();
     if (!editandoDoc) return;
     const token = localStorage.getItem("token");
-    if (!token) { alert("No hay sesion"); return; }
+    if (!token) { toast.addToast("No hay sesion activa", "warning"); return; }
     setGuardando(true);
     try {
       const respuesta = await fetch(`http://localhost:3001/documentacion/${editandoDoc.id}`, {
@@ -136,8 +140,9 @@ function Documentacion() {
       setDocumentos((prev) => prev.map((d) => d.id === editandoDoc.id ? actualizado : d));
       if (seleccionado?.id === editandoDoc.id) setSeleccionado(actualizado);
       cerrarEdicion();
+      toast.addToast("Cambios guardados", "success");
     } catch {
-      alert("Error al guardar los cambios");
+      toast.addToast("Error al guardar los cambios", "error");
     } finally {
       setGuardando(false);
     }

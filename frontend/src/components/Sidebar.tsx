@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { useState, useRef } from "react";
 import {
   LayoutDashboard,
@@ -29,6 +30,7 @@ interface SidebarProps {
 
 function Sidebar({ visible, onToggle, mobileOpen, onMobileClose, onSearchOpen }: SidebarProps) {
   const { usuario, logout, token, updateUser } = useAuth();
+  const toast = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const [mostrarAvatarModal, setMostrarAvatarModal] = useState(false);
@@ -69,7 +71,7 @@ function Sidebar({ visible, onToggle, mobileOpen, onMobileClose, onSearchOpen }:
       setAvatarPreview(null);
       setAvatarFile(null);
     } catch {
-      alert("Error al subir la foto");
+      toast.addToast("Error al subir la foto", "error");
     } finally {
       setSubiendo(false);
     }
