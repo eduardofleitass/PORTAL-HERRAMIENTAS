@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { ProcedimientosModule } from './procedimientos/procedimientos.module.js';
@@ -8,10 +9,30 @@ import { AuthModule } from './auth/auth.module.js';
 import { DocumentacionModule } from './documentacion/documentacion.module.js';
 import { UsuariosModule } from './usuarios/usuarios.module.js';
 import { MetricasModule } from './metricas/metricas.module.js';
+import { LogsModule } from './logs/logs.module.js';
+import { LogsService } from './logs/logs.service.js';
+import { LogsInterceptor } from './logs/logs.interceptor.js';
 
 @Module({
-  imports: [ProcedimientosModule,ErroresModule,ConfiguracionModule,AuthModule,DocumentacionModule,MetricasModule,UsuariosModule],
+  imports: [
+    ProcedimientosModule,
+    ErroresModule,
+    ConfiguracionModule,
+    AuthModule,
+    DocumentacionModule,
+    MetricasModule,
+    UsuariosModule,
+    LogsModule,
+  ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    // Interceptor global de auditoria (usa LogsService exportado por LogsModule)
+    {
+      provide: APP_INTERCEPTOR,
+      useFactory: (logsService: LogsService) => new LogsInterceptor(logsService),
+      inject: [LogsService],
+    },
+  ],
 })
 export class AppModule {}

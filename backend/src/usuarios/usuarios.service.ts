@@ -2,6 +2,9 @@ import { Injectable, ConflictException, NotFoundException } from '@nestjs/common
 import * as fs from 'fs';
 import { fileURLToPath } from 'url';
 import * as path from 'path';
+import bcrypt from 'bcryptjs';
+
+const BCRYPT_ROUNDS = 10;
 
 export interface UsuarioEntity {
   id: number;
@@ -61,7 +64,7 @@ export class UsuariosService {
     const nuevo: UsuarioEntity = {
       id: newId,
       username: dto.username,
-      password: dto.password,
+      password: bcrypt.hashSync(dto.password, BCRYPT_ROUNDS),
       nombre: dto.nombre,
       rol: dto.rol,
       activo: true,
@@ -87,7 +90,7 @@ export class UsuariosService {
     const actualizado: UsuarioEntity = {
       ...all[idx],
       ...(dto.username && { username: dto.username }),
-      ...(dto.password && { password: dto.password }),
+      ...(dto.password && { password: bcrypt.hashSync(dto.password, BCRYPT_ROUNDS) }),
       ...(dto.nombre && { nombre: dto.nombre }),
       ...(dto.rol && { rol: dto.rol }),
       ...(dto.activo !== undefined && { activo: dto.activo }),

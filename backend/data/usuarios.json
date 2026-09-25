@@ -2,7 +2,7 @@
   {
     "id": 1,
     "username": "admin",
-    "password": "admin",
+    "password": "$2b$10$9IR2gfNcUZrxAzBNq4Dz2.DP8QQKTA6JK5jsTvEMPsyt1c0ANCb/a",
     "nombre": "Administrador",
     "rol": "admin",
     "avatar": "uploads\\avatars\\1790333367594-28471362.png",
@@ -11,7 +11,7 @@
   {
     "id": 2,
     "username": "eduardo.fleitas",
-    "password": "edufleitas1",
+    "password": "$2b$10$2kGvwUYuragGDPb5NgqhROjR/CJEPveSyD/qTvelPejtcNike1mEO",
     "nombre": "Eduardo Fleitas",
     "rol": "admin",
     "avatar": "uploads\\avatars\\1790334777087-726999356.jpg",

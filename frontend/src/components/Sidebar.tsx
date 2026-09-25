@@ -12,7 +12,8 @@ import {
   Camera,
   PanelLeftOpen,
   ChevronLeft,
-  X
+  X,
+  Activity
 } from "lucide-react";
 
 function avatarUrl(avatar?: string): string {
@@ -82,6 +83,7 @@ function Sidebar({ visible, onToggle, mobileOpen, onMobileClose, onSearchOpen }:
     { path: "/procedimientos", label: "Procedimientos", icon: ClipboardList },
     { path: "/errores", label: "Errores", icon: Search },
     { path: "/documentacion", label: "Documentacion", icon: BookOpen },
+    { path: "/logs", label: "Actividad", icon: Activity },
   ];
 
   const adminLinks = [
