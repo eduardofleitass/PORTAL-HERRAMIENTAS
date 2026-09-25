@@ -3,6 +3,10 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { Pencil, Trash2, RotateCcw } from "lucide-react";
 import ConfirmModal from "../components/ConfirmModal";
+import Pagination from "../components/Pagination";
+import { usePagination } from "../hooks/usePagination";
+import { useSort } from "../hooks/useSort";
+import OrdenSelector from "../components/OrdenSelector";
 
 interface ErrorItem {
   id: number;
@@ -69,6 +73,8 @@ function Errores() {
     const f = frecuenciaFiltro ? e.frecuencia === frecuenciaFiltro : true;
     return m && f;
   });
+  const ord = useSort(filtrados, "codigo");
+  const pag = usePagination(ord.itemsOrdenados, { porPagina: 8, reiniciarEn: `${moduloFiltro}|${frecuenciaFiltro}|${ord.campo}|${ord.dir}` });
 
   function cerrarFormulario() {
     setNuevoCodigo(""); setNuevoTitulo(""); setNuevaDescripcion("");
@@ -217,6 +223,17 @@ function Errores() {
                 </select>
               </div>
             </div>
+            <OrdenSelector
+              opciones={[
+                { campo: "codigo", label: "Codigo" },
+                { campo: "titulo", label: "Titulo" },
+                { campo: "modulo_afectado", label: "Modulo" },
+                { campo: "frecuencia", label: "Frecuencia" },
+              ]}
+              campoActivo={ord.campo}
+              dir={ord.dir}
+              onOrdenar={ord.ordenarPor}
+            />
             {loading && <p className="loading">Cargando errores...</p>}
             {errorMsg && (
               <div className="error">
@@ -231,7 +248,7 @@ function Errores() {
             {!loading && !errorMsg && (
               <div className="lista-errores">
                 {filtrados.length === 0 && <p>No hay errores con esos filtros.</p>}
-                {filtrados.map((err) => (
+                {pag.itemsPagina.map((err) => (
                   <div key={err.id} className={`error-item ${seleccionado?.id === err.id ? "activo" : ""}`} onClick={() => setSeleccionado(err)}>
                     <div className="item-contenido">
                       <div className="error-codigo">{err.codigo}</div>
@@ -253,6 +270,7 @@ function Errores() {
                     )}
                   </div>
                 ))}
+                <Pagination pag={pag} etiqueta="errores" />
               </div>
             )}
           </div>

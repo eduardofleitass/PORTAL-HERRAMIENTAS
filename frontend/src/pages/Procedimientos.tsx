@@ -3,6 +3,10 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { Pencil, Trash2, RotateCcw } from "lucide-react";
 import ConfirmModal from "../components/ConfirmModal";
+import Pagination from "../components/Pagination";
+import { usePagination } from "../hooks/usePagination";
+import { useSort } from "../hooks/useSort";
+import OrdenSelector from "../components/OrdenSelector";
 
 interface Paso {
   orden: number;
@@ -65,6 +69,8 @@ function Procedimientos() {
 
   const modulosUnicos = Array.from(new Set(procedimientos.map((p) => p.modulo)));
   const filtrados = moduloFiltro ? procedimientos.filter((p) => p.modulo === moduloFiltro) : procedimientos;
+  const ord = useSort(filtrados, "titulo");
+  const pag = usePagination(ord.itemsOrdenados, { porPagina: 8, reiniciarEn: `${moduloFiltro}|${ord.campo}|${ord.dir}` });
 
   function agregarPaso() {
     setNuevosPasos((prev) => [...prev, { orden: prev.length + 1, descripcion: "" }]);
@@ -215,6 +221,17 @@ function Procedimientos() {
                 {modulosUnicos.map((m) => <option key={m} value={m}>{m}</option>)}
               </select>
             </div>
+            <OrdenSelector
+              opciones={[
+                { campo: "titulo", label: "Titulo" },
+                { campo: "modulo", label: "Modulo" },
+                { campo: "nivel", label: "Nivel" },
+                { campo: "tiempo_estimado", label: "Tiempo estimado" },
+              ]}
+              campoActivo={ord.campo}
+              dir={ord.dir}
+              onOrdenar={ord.ordenarPor}
+            />
             {loading && <p className="loading">Cargando procedimientos...</p>}
             {error && (
               <div className="error">
@@ -229,7 +246,7 @@ function Procedimientos() {
             {!loading && !error && (
               <div className="lista-procedimientos">
                 {filtrados.length === 0 && <p>No hay procedimientos para este modulo.</p>}
-                {filtrados.map((proc) => (
+                {pag.itemsPagina.map((proc) => (
                   <div key={proc.id} className={`procedimiento-item ${seleccionado?.id === proc.id ? "activo" : ""}`} onClick={() => setSeleccionado(proc)}>
                     <div className="item-contenido">
                       <h3>{proc.titulo}</h3>
@@ -251,6 +268,7 @@ function Procedimientos() {
                     )}
                   </div>
                 ))}
+                <Pagination pag={pag} etiqueta="procedimientos" />
               </div>
             )}
           </div>

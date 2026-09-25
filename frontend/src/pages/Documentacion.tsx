@@ -3,6 +3,10 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { Trash2, RotateCcw, Pencil } from "lucide-react";
 import ConfirmModal from "../components/ConfirmModal";
+import Pagination from "../components/Pagination";
+import { usePagination } from "../hooks/usePagination";
+import { useSort } from "../hooks/useSort";
+import OrdenSelector from "../components/OrdenSelector";
 
 interface Documento {
   id: number;
@@ -63,6 +67,8 @@ function Documentacion() {
 
   const seccionesUnicas = Array.from(new Set(documentos.map((d) => d.seccion)));
   const filtrados = seccionFiltro ? documentos.filter((d) => d.seccion === seccionFiltro) : documentos;
+  const ord = useSort(filtrados, "titulo");
+  const pag = usePagination(ord.itemsOrdenados, { porPagina: 8, reiniciarEn: `${seccionFiltro}|${ord.campo}|${ord.dir}` });
 
   async function guardarDocumento(evento: React.FormEvent) {
     evento.preventDefault();
@@ -190,6 +196,18 @@ function Documentacion() {
                 {seccionesUnicas.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
+            <OrdenSelector
+              opciones={[
+                { campo: "titulo", label: "Titulo" },
+                { campo: "seccion", label: "Seccion" },
+                { campo: "nombreArchivo", label: "Archivo" },
+                { campo: "tamano", label: "Tamano" },
+                { campo: "fechaSubida", label: "Fecha" },
+              ]}
+              campoActivo={ord.campo}
+              dir={ord.dir}
+              onOrdenar={ord.ordenarPor}
+            />
             {loading && <p className="loading">Cargando documentos...</p>}
             {error && (
               <div className="error">
@@ -204,7 +222,7 @@ function Documentacion() {
             {!loading && !error && (
               <div className="lista-documentos">
                 {filtrados.length === 0 && <p>No hay documentos en esta seccion.</p>}
-                {filtrados.map((doc) => (
+                {pag.itemsPagina.map((doc) => (
                   <div key={doc.id} className={`documento-item ${seleccionado?.id === doc.id ? "activo" : ""}`} onClick={() => setSeleccionado(doc)}>
                     <h3>{doc.titulo}</h3>
                     <p>{doc.descripcion}</p>
@@ -225,6 +243,7 @@ function Documentacion() {
                     )}
                   </div>
                 ))}
+                <Pagination pag={pag} etiqueta="documentos" />
               </div>
             )}
           </div>
