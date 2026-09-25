@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Trash2 } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 
 interface Documento {
   id: number;
@@ -19,11 +19,11 @@ function Documentacion() {
   const navigate = useNavigate();
 
   const [documentos, setDocumentos] = useState<Documento[]>([]);
+  const [seleccionado, setSeleccionado] = useState<Documento | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [seccionFiltro, setSeccionFiltro] = useState("");
 
-  // Formulario
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -43,6 +43,14 @@ function Documentacion() {
     }
     cargar();
   }, []);
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape" && seleccionado) setSeleccionado(null);
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [seleccionado]);
 
   const seccionesUnicas = Array.from(new Set(documentos.map((d) => d.seccion)));
   const filtrados = seccionFiltro ? documentos.filter((d) => d.seccion === seccionFiltro) : documentos;
@@ -83,10 +91,9 @@ function Documentacion() {
       });
       if (!respuesta.ok) { alert("Error al eliminar"); return; }
       setDocumentos((prev) => prev.filter((d) => d.id !== id));
+      setSeleccionado(null);
     } catch { alert("Error de conexion"); }
   }
-
-  function volver() { navigate("/"); }
 
   return (
     <div className="documentacion-page">
@@ -94,13 +101,7 @@ function Documentacion() {
         <h1>Documentacion</h1>
       </header>
 
-      {/* Boton + Nuevo */}
-      {!mostrarFormulario && !loading && usuario?.rol === "admin" && (
-        <button className="btn-nuevo" onClick={() => setMostrarFormulario(true)}>+ Subir Documento</button>
-      )}
-
-      {/* Formulario */}
-      {mostrarFormulario && (
+      {mostrarFormulario ? (
         <form className="formulario-procedimiento" onSubmit={guardarDocumento}>
           <h3>Subir Documento</h3>
           {errorGuardar && <p className="error">{errorGuardar}</p>}
@@ -122,45 +123,70 @@ function Documentacion() {
             <button type="button" className="btn-cancelar" onClick={() => setMostrarFormulario(false)}>Cancelar</button>
           </div>
         </form>
-      )}
-
-      {/* Filtro */}
-      <div className="filtro-container">
-        <label>Filtrar por seccion:</label>
-        <select value={seccionFiltro} onChange={(e) => setSeccionFiltro(e.target.value)}>
-          <option value="">Todas las secciones</option>
-          {seccionesUnicas.map((s) => <option key={s} value={s}>{s}</option>)}
-        </select>
-      </div>
-
-      {loading && <p className="loading">Cargando documentos...</p>}
-      {error && <p className="error">{error}</p>}
-
-      {/* Listado */}
-      {!loading && !error && (
-        <div className="lista-documentos">
-          {filtrados.length === 0 && <p>No hay documentos en esta seccion.</p>}
-          {filtrados.map((doc) => (
-            <div key={doc.id} className="documento-item">
-              <h3>{doc.titulo}</h3>
-              <p>{doc.descripcion}</p>
-              <div className="documento-meta">
-                <span className="seccion">{doc.seccion}</span>
-                <span>{doc.nombreArchivo}</span>
-                <span>{(doc.tamano / 1024).toFixed(1)} KB</span>
+      ) : (
+        <div className="split-layout">
+          <div className="split-list">
+            {!loading && usuario?.rol === "admin" && (
+              <button className="btn-nuevo" onClick={() => setMostrarFormulario(true)}>+ Subir Documento</button>
+            )}
+            <div className="filtro-container">
+              <label>Filtrar por seccion:</label>
+              <select value={seccionFiltro} onChange={(e) => { setSeccionFiltro(e.target.value); setSeleccionado(null); }}>
+                <option value="">Todas las secciones</option>
+                {seccionesUnicas.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            {loading && <p className="loading">Cargando documentos...</p>}
+            {error && <p className="error">{error}</p>}
+            {!loading && !error && (
+              <div className="lista-documentos">
+                {filtrados.length === 0 && <p>No hay documentos en esta seccion.</p>}
+                {filtrados.map((doc) => (
+                  <div key={doc.id} className={`documento-item ${seleccionado?.id === doc.id ? "activo" : ""}`} onClick={() => setSeleccionado(doc)}>
+                    <h3>{doc.titulo}</h3>
+                    <p>{doc.descripcion}</p>
+                    <div className="documento-meta">
+                      <span className="seccion">{doc.seccion}</span>
+                      <span>{doc.nombreArchivo}</span>
+                      <span>{(doc.tamano / 1024).toFixed(1)} KB</span>
+                    </div>
+                    {usuario?.rol === "admin" && (
+                      <div className="documento-acciones">
+                        <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={(e) => { e.stopPropagation(); eliminarDocumento(doc.id); }}>
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-              <div className="documento-acciones">
-                <a href={`http://localhost:3001${doc.rutaArchivo}`} target="_blank" rel="noopener noreferrer" className="btn-descargar">
+            )}
+          </div>
+          <div className="split-detail">
+            {seleccionado ? (
+              <div className="detalle-documento">
+                <div className="detalle-header">
+                  <h2>{seleccionado.titulo}</h2>
+                  <button className="btn-cerrar-detalle" onClick={() => setSeleccionado(null)} title="Cerrar (ESC)">
+                    ✕
+                  </button>
+                </div>
+                <p className="detalle-descripcion">{seleccionado.descripcion}</p>
+                <div className="detalle-meta">
+                  <span className="seccion">{seleccionado.seccion}</span>
+                  <span>{seleccionado.nombreArchivo}</span>
+                  <span>{(seleccionado.tamano / 1024).toFixed(1)} KB</span>
+                </div>
+                <a href={`http://localhost:3001${seleccionado.rutaArchivo}`} target="_blank" rel="noopener noreferrer" className="btn-descargar">
                   Descargar
                 </a>
-                {usuario?.rol === "admin" && (
-                  <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={() => eliminarDocumento(doc.id)}>
-                    <Trash2 size={16} />
-                  </button>
-                )}
               </div>
-            </div>
-          ))}
+            ) : (
+              <div className="split-empty">
+                <p>Selecciona un documento de la lista para ver su detalle.</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

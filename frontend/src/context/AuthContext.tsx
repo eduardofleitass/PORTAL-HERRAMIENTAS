@@ -1,34 +1,31 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 
-//Forma de un usuario (sin password)
 interface Usuario {
   id: number;
   username: string;
   nombre: string;
   rol: string;
+  avatar?: string;
 }
 
-// Forma del contexto: que datos y funciones expone
 interface AuthContextType {
   usuario: Usuario | null;
   token: string | null;
   login: (token: string, usuario: Usuario) => void;
   logout: () => void;
+  updateUser: (usuario: Usuario) => void;
 }
 
-// Creamos el contexto (la "caja" vacia)
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// El Provider: envuelve toda la app
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Inicializamos el estado leyendo localStorage directamente (sin useEffect)
   const [usuario, setUsuario] = useState<Usuario | null>(() => {
     const guardado = localStorage.getItem("usuario");
     return guardado ? JSON.parse(guardado) : null;
   });
   const [token, setToken] = useState<string | null>(() => {
-  return localStorage.getItem("token");
-});
+    return localStorage.getItem("token");
+  });
 
   function login(token: string, usuario: Usuario) {
     localStorage.setItem("token", token);
@@ -44,14 +41,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUsuario(null);
   }
 
+  function updateUser(usuario: Usuario) {
+    localStorage.setItem("usuario", JSON.stringify(usuario));
+    setUsuario(usuario);
+  }
+
   return (
-    <AuthContext.Provider value={{ usuario, token, login, logout }}>
+    <AuthContext.Provider value={{ usuario, token, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-//Hook personalizado para leer el contexto facilmente
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

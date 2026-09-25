@@ -4,7 +4,9 @@ import Dashboard from "./pages/Dashboard";
 import Procedimientos from "./pages/Procedimientos";
 import Errores from "./pages/Errores";
 import Documentacion from "./pages/Documentacion";
+import Usuarios from "./pages/Usuarios";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
 import Sidebar from "./components/Sidebar";
 import PublicRoute from "./components/PublicRoute";
 
@@ -29,6 +31,7 @@ function AppLayout() {
           <Route path="/procedimientos" element={<ProtectedRoute><Procedimientos /></ProtectedRoute>} />
           <Route path="/errores" element={<ProtectedRoute><Errores /></ProtectedRoute>} />
           <Route path="/documentacion" element={<ProtectedRoute><Documentacion /></ProtectedRoute>} />
+          <Route path="/usuarios" element={<AdminRoute><Usuarios /></AdminRoute>} />
         </Routes>
       </main>
     </div>

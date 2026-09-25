@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, X } from "lucide-react";
 
-interface Error {
+interface ErrorItem {
   id: number;
   codigo: string;
   titulo: string;
@@ -19,14 +19,13 @@ function Errores() {
   const { usuario } = useAuth();
   const navigate = useNavigate();
 
-  const [errores, setErrores] = useState<Error[]>([]);
-  const [seleccionado, setSeleccionado] = useState<Error | null>(null);
+  const [errores, setErrores] = useState<ErrorItem[]>([]);
+  const [seleccionado, setSeleccionado] = useState<ErrorItem | null>(null);
   const [moduloFiltro, setModuloFiltro] = useState("");
   const [frecuenciaFiltro, setFrecuenciaFiltro] = useState("");
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Formulario (crear + editar)
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [editandoId, setEditandoId] = useState<number | null>(null);
   const [nuevoCodigo, setNuevoCodigo] = useState("");
@@ -52,6 +51,14 @@ function Errores() {
     cargar();
   }, []);
 
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape" && seleccionado) setSeleccionado(null);
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [seleccionado]);
+
   const modulosUnicos = Array.from(new Set(errores.map((e) => e.modulo_afectado)));
   const frecuenciasUnicas = Array.from(new Set(errores.map((e) => e.frecuencia)));
   const filtrados = errores.filter((e) => {
@@ -67,7 +74,7 @@ function Errores() {
     setMostrarFormulario(false); setEditandoId(null); setErrorGuardar("");
   }
 
-  function iniciarEdicion(err: Error) {
+  function iniciarEdicion(err: ErrorItem) {
     setEditandoId(err.id);
     setNuevoCodigo(err.codigo); setNuevoTitulo(err.titulo);
     setNuevaDescripcion(err.descripcion); setNuevaCausa(err.causa);
@@ -141,25 +148,16 @@ function Errores() {
     } catch { alert("Error de conexion"); }
   }
 
-  function volver() { navigate("/"); }
-
   return (
     <div className="errores-page">
       <header className="page-header">
         <h1>Buscar Errores</h1>
       </header>
 
-      {/* Boton + Nuevo */}
-      {!mostrarFormulario && !loading && usuario?.rol === "admin" && (
-        <button className="btn-nuevo" onClick={() => setMostrarFormulario(true)}>+ Nuevo Error</button>
-      )}
-
-      {/* Formulario */}
-      {mostrarFormulario && (
+      {mostrarFormulario ? (
         <form className="formulario-procedimiento" onSubmit={editandoId ? guardarEdicion : guardarError}>
           <h3>{editandoId ? "Editar Error" : "Nuevo Error"}</h3>
           {errorGuardar && <p className="error">{errorGuardar}</p>}
-
           <div className="form-grupo"><label>Codigo:</label>
             <input type="text" value={nuevoCodigo} onChange={(e) => setNuevoCodigo(e.target.value)} required placeholder="Ej: SIFEN-004" />
           </div>
@@ -186,83 +184,83 @@ function Errores() {
           <div className="form-grupo"><label>Tags (separados por coma):</label>
             <input type="text" value={nuevosTags} onChange={(e) => setNuevosTags(e.target.value)} placeholder="sifen, error, cdc" />
           </div>
-
           <div className="form-botones">
             <button type="submit" disabled={guardando}>{guardando ? "Guardando..." : (editandoId ? "Actualizar" : "Guardar")}</button>
             <button type="button" className="btn-cancelar" onClick={cerrarFormulario}>Cancelar</button>
           </div>
         </form>
-      )}
-
-      {/* Filtros */}
-      <div className="filtros-row">
-        <div className="filtro-container">
-          <label>Modulo:</label>
-          <select value={moduloFiltro} onChange={(e) => { setModuloFiltro(e.target.value); setSeleccionado(null); }}>
-            <option value="">Todos</option>
-            {modulosUnicos.map((m) => <option key={m} value={m}>{m}</option>)}
-          </select>
-        </div>
-        <div className="filtro-container">
-          <label>Frecuencia:</label>
-          <select value={frecuenciaFiltro} onChange={(e) => { setFrecuenciaFiltro(e.target.value); setSeleccionado(null); }}>
-            <option value="">Todas</option>
-            {frecuenciasUnicas.map((f) => <option key={f} value={f}>{f}</option>)}
-          </select>
-        </div>
-      </div>
-
-      {loading && <p className="loading">Cargando errores...</p>}
-      {errorMsg && <p className="error">{errorMsg}</p>}
-
-      {/* Listado */}
-      {!loading && !errorMsg && (
-        <div className="lista-errores">
-          {filtrados.length === 0 && <p>No hay errores con esos filtros.</p>}
-          {filtrados.map((err) => (
-            <div key={err.id} className={`error-item ${seleccionado?.id === err.id ? "activo" : ""}`} onClick={() => setSeleccionado(err)}>
-              <div className="item-contenido">
-                <div className="error-codigo">{err.codigo}</div>
-                <h3>{err.titulo}</h3>
-                <div className="error-meta">
-                  <span className="modulo">{err.modulo_afectado}</span>
-                  <span className={`frecuencia freq-${err.frecuencia}`}>{err.frecuencia}</span>
-                </div>
+      ) : (
+        <div className="split-layout">
+          <div className="split-list">
+            {!loading && usuario?.rol === "admin" && (
+              <button className="btn-nuevo" onClick={() => setMostrarFormulario(true)}>+ Nuevo Error</button>
+            )}
+            <div className="filtros-row">
+              <div className="filtro-container">
+                <label>Modulo:</label>
+                <select value={moduloFiltro} onChange={(e) => { setModuloFiltro(e.target.value); setSeleccionado(null); }}>
+                  <option value="">Todos</option>
+                  {modulosUnicos.map((m) => <option key={m} value={m}>{m}</option>)}
+                </select>
               </div>
-              {usuario?.rol === "admin" && (
-                <div className="item-acciones" onClick={(e) => e.stopPropagation()}>
-                  <button className="btn-icon btn-icon-editar" title="Editar" onClick={() => iniciarEdicion(err)}>
-                    <Pencil size={16} />
-                  </button>
-                  <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={() => eliminarError(err.id)}>
-                    <Trash2 size={16} />
+              <div className="filtro-container">
+                <label>Frecuencia:</label>
+                <select value={frecuenciaFiltro} onChange={(e) => { setFrecuenciaFiltro(e.target.value); setSeleccionado(null); }}>
+                  <option value="">Todas</option>
+                  {frecuenciasUnicas.map((f) => <option key={f} value={f}>{f}</option>)}
+                </select>
+              </div>
+            </div>
+            {loading && <p className="loading">Cargando errores...</p>}
+            {errorMsg && <p className="error">{errorMsg}</p>}
+            {!loading && !errorMsg && (
+              <div className="lista-errores">
+                {filtrados.length === 0 && <p>No hay errores con esos filtros.</p>}
+                {filtrados.map((err) => (
+                  <div key={err.id} className={`error-item ${seleccionado?.id === err.id ? "activo" : ""}`} onClick={() => setSeleccionado(err)}>
+                    <div className="item-contenido">
+                      <div className="error-codigo">{err.codigo}</div>
+                      <h3>{err.titulo}</h3>
+                      <div className="error-meta">
+                        <span className="modulo">{err.modulo_afectado}</span>
+                        <span className={`frecuencia freq-${err.frecuencia}`}>{err.frecuencia}</span>
+                      </div>
+                    </div>
+                    {usuario?.rol === "admin" && (
+                      <div className="item-acciones" onClick={(e) => e.stopPropagation()}>
+                        <button className="btn-icon btn-icon-editar" title="Editar" onClick={() => iniciarEdicion(err)}>
+                          <Pencil size={16} />
+                        </button>
+                        <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={() => eliminarError(err.id)}>
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="split-detail">
+            {seleccionado ? (
+              <div className="detalle-error">
+                <div className="detalle-header">
+                  <h2>{seleccionado.codigo} — {seleccionado.titulo}</h2>
+                  <button className="btn-cerrar-detalle" onClick={() => setSeleccionado(null)} title="Cerrar (ESC)">
+                    ✕
                   </button>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Detalle */}
-      {seleccionado && (
-        <div className="detalle-error">
-          <h2>{seleccionado.codigo} — {seleccionado.titulo}</h2>
-          <div className="detalle-seccion"><h4>Descripcion</h4><p>{seleccionado.descripcion}</p></div>
-          <div className="detalle-seccion"><h4>Causa</h4><p>{seleccionado.causa}</p></div>
-          <div className="detalle-seccion"><h4>Solucion</h4><p>{seleccionado.solucion}</p></div>
-          <div className="detalle-tags">{seleccionado.tags.map((tag) => <span key={tag} className="tag">{tag}</span>)}</div>
-          {usuario?.rol === "admin" && (
-            <div className="detalle-acciones">
-              <button className="btn-icon btn-icon-editar" title="Editar" onClick={() => iniciarEdicion(seleccionado)}>
-                <Pencil size={16} />
-              </button>
-              <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={() => eliminarError(seleccionado.id)}>
-                <Trash2 size={16} />
-              </button>
-            </div>
-          )}
-          <button onClick={() => setSeleccionado(null)}>Cerrar detalle</button>
+                <div className="detalle-seccion"><h4>Descripcion</h4><p>{seleccionado.descripcion}</p></div>
+                <div className="detalle-seccion"><h4>Causa</h4><p>{seleccionado.causa}</p></div>
+                <div className="detalle-seccion"><h4>Solucion</h4><p>{seleccionado.solucion}</p></div>
+                <div className="detalle-tags">{seleccionado.tags.map((tag) => <span key={tag} className="tag">{tag}</span>)}</div>
+              </div>
+            ) : (
+              <div className="split-empty">
+                <p>Selecciona un error de la lista para ver su detalle.</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

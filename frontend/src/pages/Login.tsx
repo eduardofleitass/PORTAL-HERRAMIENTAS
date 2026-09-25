@@ -125,7 +125,7 @@ function Login() {
     <div className="login-page">
       <div className="login-container">
         <div className="login-logo">
-          <img src="public/logo3.png" alt="Portal de Herramientas" />
+          <img src="/logo3.png" alt="Portal de Herramientas" />
         </div>
         <h2>Portal de Herramientas</h2>
         <form onSubmit={manejarLogin}>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, X } from "lucide-react";
 
 interface Paso {
   orden: number;
@@ -27,7 +27,6 @@ function Procedimientos() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // === FORMULARIO (crear + editar) ===
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [editandoId, setEditandoId] = useState<number | null>(null);
   const [nuevoTitulo, setNuevoTitulo] = useState("");
@@ -53,10 +52,17 @@ function Procedimientos() {
     cargar();
   }, []);
 
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape" && seleccionado) setSeleccionado(null);
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [seleccionado]);
+
   const modulosUnicos = Array.from(new Set(procedimientos.map((p) => p.modulo)));
   const filtrados = moduloFiltro ? procedimientos.filter((p) => p.modulo === moduloFiltro) : procedimientos;
 
-  // === PASOS DEL FORMULARIO ===
   function agregarPaso() {
     setNuevosPasos((prev) => [...prev, { orden: prev.length + 1, descripcion: "" }]);
   }
@@ -67,7 +73,6 @@ function Procedimientos() {
     setNuevosPasos((prev) => prev.filter((_, i) => i !== index).map((p, i) => ({ ...p, orden: i + 1 })));
   }
 
-  // === CREAR NUEVO ===
   async function guardarProcedimiento(evento: React.FormEvent) {
     evento.preventDefault();
     setErrorGuardar("");
@@ -93,7 +98,6 @@ function Procedimientos() {
     finally { setGuardando(false); }
   }
 
-  // === EDITAR ===
   function iniciarEdicion(proc: Procedimiento) {
     setEditandoId(proc.id);
     setNuevoTitulo(proc.titulo);
@@ -131,7 +135,6 @@ function Procedimientos() {
     finally { setGuardando(false); }
   }
 
-  // === ELIMINAR ===
   async function eliminarProcedimiento(id: number) {
     if (!confirm("¿Seguro que queres eliminar este procedimiento?")) return;
     const token = localStorage.getItem("token");
@@ -153,21 +156,13 @@ function Procedimientos() {
     setMostrarFormulario(false); setEditandoId(null); setErrorGuardar("");
   }
 
-  function volver() { navigate("/"); }
-
   return (
     <div className="procedimientos-page">
       <header className="page-header">
         <h1>Procedimientos</h1>
       </header>
 
-      {/* Boton + Nuevo */}
-      {!mostrarFormulario && !loading && usuario?.rol === "admin" && (
-        <button className="btn-nuevo" onClick={() => setMostrarFormulario(true)}>+ Nuevo Procedimiento</button>
-      )}
-
-      {/* Formulario */}
-      {mostrarFormulario && (
+      {mostrarFormulario ? (
         <form className="formulario-procedimiento" onSubmit={editandoId ? guardarEdicion : guardarProcedimiento}>
           <h3>{editandoId ? "Editar Procedimiento" : "Nuevo Procedimiento"}</h3>
           {errorGuardar && <p className="error">{errorGuardar}</p>}
@@ -201,74 +196,74 @@ function Procedimientos() {
             <button type="button" className="btn-cancelar" onClick={cerrarFormulario}>Cancelar</button>
           </div>
         </form>
-      )}
-
-      {/* Filtro */}
-      <div className="filtro-container">
-        <label>Filtrar por modulo:</label>
-        <select value={moduloFiltro} onChange={(e) => { setModuloFiltro(e.target.value); setSeleccionado(null); }}>
-          <option value="">Todos los modulos</option>
-          {modulosUnicos.map((m) => <option key={m} value={m}>{m}</option>)}
-        </select>
-      </div>
-
-      {/* Estados */}
-      {loading && <p className="loading">Cargando procedimientos...</p>}
-      {error && <p className="error">{error}</p>}
-
-      {/* Listado */}
-      {!loading && !error && (
-        <div className="lista-procedimientos">
-          {filtrados.length === 0 && <p>No hay procedimientos para este modulo.</p>}
-          {filtrados.map((proc) => (
-            <div key={proc.id} className={`procedimiento-item ${seleccionado?.id === proc.id ? "activo" : ""}`} onClick={() => setSeleccionado(proc)}>
-              <div className="item-contenido">
-                <h3>{proc.titulo}</h3>
-                <div className="procedimiento-meta">
-                  <span className="modulo">{proc.modulo}</span>
-                  <span className="nivel">{proc.nivel}</span>
-                  <span className="tiempo">{proc.tiempo_estimado}</span>
-                </div>
+      ) : (
+        <div className="split-layout">
+          <div className="split-list">
+            {!loading && usuario?.rol === "admin" && (
+              <button className="btn-nuevo" onClick={() => setMostrarFormulario(true)}>+ Nuevo Procedimiento</button>
+            )}
+            <div className="filtro-container">
+              <label>Filtrar por modulo:</label>
+              <select value={moduloFiltro} onChange={(e) => { setModuloFiltro(e.target.value); setSeleccionado(null); }}>
+                <option value="">Todos los modulos</option>
+                {modulosUnicos.map((m) => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </div>
+            {loading && <p className="loading">Cargando procedimientos...</p>}
+            {error && <p className="error">{error}</p>}
+            {!loading && !error && (
+              <div className="lista-procedimientos">
+                {filtrados.length === 0 && <p>No hay procedimientos para este modulo.</p>}
+                {filtrados.map((proc) => (
+                  <div key={proc.id} className={`procedimiento-item ${seleccionado?.id === proc.id ? "activo" : ""}`} onClick={() => setSeleccionado(proc)}>
+                    <div className="item-contenido">
+                      <h3>{proc.titulo}</h3>
+                      <div className="procedimiento-meta">
+                        <span className="modulo">{proc.modulo}</span>
+                        <span className="nivel">{proc.nivel}</span>
+                        <span className="tiempo">{proc.tiempo_estimado}</span>
+                      </div>
+                    </div>
+                    {usuario?.rol === "admin" && (
+                      <div className="item-acciones" onClick={(e) => e.stopPropagation()}>
+                        <button className="btn-icon btn-icon-editar" title="Editar" onClick={() => iniciarEdicion(proc)}>
+                          <Pencil size={16} />
+                        </button>
+                        <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={() => eliminarProcedimiento(proc.id)}>
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-              {usuario?.rol === "admin" && (
-                <div className="item-acciones" onClick={(e) => e.stopPropagation()}>
-                  <button className="btn-icon btn-icon-editar" title="Editar" onClick={() => iniciarEdicion(proc)}>
-                    <Pencil size={16} />
-                  </button>
-                  <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={() => eliminarProcedimiento(proc.id)}>
-                    <Trash2 size={16} />
+            )}
+          </div>
+          <div className="split-detail">
+            {seleccionado ? (
+              <div className="detalle-procedimiento">
+                <div className="detalle-header">
+                  <h2>{seleccionado.titulo}</h2>
+                  <button className="btn-cerrar-detalle" onClick={() => setSeleccionado(null)} title="Cerrar (ESC)">
+                    ✕
                   </button>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Detalle */}
-      {seleccionado && (
-        <div className="detalle-procedimiento">
-          <h2>{seleccionado.titulo}</h2>
-          <div className="detalle-meta">
-            <span>Modulo: {seleccionado.modulo}</span>
-            <span>Nivel: {seleccionado.nivel}</span>
-            <span>Tiempo: {seleccionado.tiempo_estimado}</span>
+                <div className="detalle-meta">
+                  <span>Modulo: {seleccionado.modulo}</span>
+                  <span>Nivel: {seleccionado.nivel}</span>
+                  <span>Tiempo: {seleccionado.tiempo_estimado}</span>
+                  </div>
+                  <h4>Pasos:</h4>
+                  <ol className="pasos-lista">
+                    {seleccionado.pasos.map((paso) => <li key={paso.orden}><strong>Paso {paso.orden}:</strong> {paso.descripcion}</li>)}
+                  </ol>
+              </div>
+            ) : (
+              <div className="split-empty">
+                <p>Selecciona un procedimiento de la lista para ver su detalle.</p>
+              </div>
+            )}
           </div>
-          <h4>Pasos:</h4>
-          <ol className="pasos-lista">
-            {seleccionado.pasos.map((paso) => <li key={paso.orden}><strong>Paso {paso.orden}:</strong> {paso.descripcion}</li>)}
-          </ol>
-          {usuario?.rol === "admin" && (
-            <div className="detalle-acciones">
-              <button className="btn-icon btn-icon-editar" title="Editar" onClick={() => iniciarEdicion(seleccionado)}>
-                <Pencil size={16} />
-              </button>
-              <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={() => eliminarProcedimiento(seleccionado.id)}>
-                <Trash2 size={16} />
-              </button>
-            </div>
-          )}
-          <button onClick={() => setSeleccionado(null)}>Cerrar detalle</button>
         </div>
       )}
     </div>

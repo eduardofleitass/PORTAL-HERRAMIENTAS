@@ -8,9 +8,9 @@ import express from 'express';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // CORS: permite que el frontend (puerto diferente) se comunique con el backend
+  // CORS: permite que el frontend (cualquier puerto localhost) se comunique con el backend
   app.enableCors({
-    origin: 'http://localhost:5174',
+    origin: [/http:\/\/localhost:\d+/],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
