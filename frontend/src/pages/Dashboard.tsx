@@ -8,9 +8,9 @@ import {
   AlertCircle,
   TrendingUp,
   Clock,
-  Hash,
-  Tag
+  Hash
 } from "lucide-react";
+import DonutChart from "../components/DonutChart";
 
 interface MetricasData {
   totales: { procedimientos: number; errores: number; documentacion: number };
@@ -52,32 +52,9 @@ function Dashboard() {
     cargar();
   }, []);
 
-  function barraHorizontal(label: string, valor: number, max: number, color: string) {
-    const porcentaje = max > 0 ? (valor / max) * 100 : 0;
-    return (
-      <div className="barra-item" key={label}>
-        <div className="barra-label">
-          <span>{label}</span>
-          <span className="barra-valor">{valor}</span>
-        </div>
-        <div className="barra-track">
-          <div className="barra-fill" style={{ width: `${porcentaje}%`, background: color }} />
-        </div>
-      </div>
-    );
-  }
-
-  const maxProcs = metricas ? Math.max(...Object.values(metricas.procedimientosPorModulo), 1) : 1;
-  const maxErrores = metricas ? Math.max(...Object.values(metricas.erroresPorModulo), 1) : 1;
-  const maxNiveles = metricas ? Math.max(...Object.values(metricas.procedimientosPorNivel), 1) : 1;
-
-  const colores = {
-    primario: "linear-gradient(90deg, #c9965e, #a67c45)",
-    verde: "linear-gradient(90deg, #5a9a6a, #3d7a4e)",
-    naranja: "linear-gradient(90deg, #b8926b, #8a6a4b)",
-    rojo: "linear-gradient(90deg, #b86868, #8a4848)",
-    morado: "linear-gradient(90deg, #7a6a9e, #5a4a7e)",
-  };
+  const paletaPrimaria = ["#c9965e", "#a67c45", "#d4a96e", "#8a6838", "#e0bc85"];
+  const paletaErrores = ["#c97a7a", "#a85a5a", "#d99a9a", "#8a4848", "#e0b0b0"];
+  const paletaNiveles = ["#7cb987", "#c9a66b", "#7ab8c4", "#5a9a6a", "#a08ec7"];
 
   return (
     <div className="dashboard-container">
@@ -124,84 +101,38 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* Barras */}
+          {/* Donuts de proporcion */}
           <div className="metricas-grid">
             <div className="metricas-panel">
               <h3><ClipboardList size={16} /> Procedimientos por modulo</h3>
-              <div className="barras-lista">
-                {Object.entries(metricas.procedimientosPorModulo).map(([label, val]) =>
-                  barraHorizontal(label, val, maxProcs, colores.primario)
-                )}
-              </div>
+              <DonutChart
+                data={metricas.procedimientosPorModulo}
+                paleta={paletaPrimaria}
+                centroLabel="procedimientos"
+              />
             </div>
 
             <div className="metricas-panel">
               <h3><Search size={16} /> Errores por modulo</h3>
-              <div className="barras-lista">
-                {Object.entries(metricas.erroresPorModulo).map(([label, val]) =>
-                  barraHorizontal(label, val, maxErrores, colores.rojo)
-                )}
-              </div>
+              <DonutChart
+                data={metricas.erroresPorModulo}
+                paleta={paletaErrores}
+                centroLabel="errores"
+              />
             </div>
 
             <div className="metricas-panel">
               <h3><Clock size={16} /> Procedimientos por nivel</h3>
-              <div className="barras-lista">
-                {Object.entries(metricas.procedimientosPorNivel).map(([label, val]) =>
-                  barraHorizontal(label.charAt(0).toUpperCase() + label.slice(1), val, maxNiveles, colores.verde)
+              <DonutChart
+                data={Object.fromEntries(
+                  Object.entries(metricas.procedimientosPorNivel).map(([k, v]) => [
+                    k.charAt(0).toUpperCase() + k.slice(1),
+                    v,
+                  ])
                 )}
-              </div>
-            </div>
-
-            <div className="metricas-panel">
-              <h3><AlertCircle size={16} /> Errores por frecuencia</h3>
-              <div className="barras-lista">
-                {Object.entries(metricas.erroresPorFrecuencia).map(([label, val]) => {
-                  const color = label === "alta" ? colores.rojo : label === "media" ? colores.naranja : colores.verde;
-                  return barraHorizontal(label.charAt(0).toUpperCase() + label.slice(1), val, 3, color);
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* Tags + Ultimos */}
-          <div className="metricas-grid">
-            <div className="metricas-panel">
-              <h3><Tag size={16} /> Tags mas usados</h3>
-              <div className="tags-cloud">
-                {metricas.tagsTop.length === 0 && <p className="muted">No hay tags aun.</p>}
-                {metricas.tagsTop.map((t) => (
-                  <span key={t.tag} className="tag-chip" onClick={() => navigate("/errores")}>
-                    {t.tag}
-                    <span className="tag-count">{t.count}</span>
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="metricas-panel">
-              <h3><Clock size={16} /> Ultimos agregados</h3>
-              <div className="ultimos-lista">
-                {metricas.ultimosAgregados.procedimientos.length === 0 && metricas.ultimosAgregados.errores.length === 0 && <p className="muted">Sin registros nuevos.</p>}
-                {metricas.ultimosAgregados.procedimientos.map((p) => (
-                  <div key={`p-${p.id}`} className="ultimo-item" onClick={() => navigate("/procedimientos")}>
-                    <div className="ultimo-tipo tipo-proc">P</div>
-                    <div className="ultimo-info">
-                      <span className="ultimo-titulo">{p.titulo}</span>
-                      <span className="ultimo-meta">{p.modulo}</span>
-                    </div>
-                  </div>
-                ))}
-                {metricas.ultimosAgregados.errores.map((e) => (
-                  <div key={`e-${e.id}`} className="ultimo-item" onClick={() => navigate("/errores")}>
-                    <div className="ultimo-tipo tipo-err">E</div>
-                    <div className="ultimo-info">
-                      <span className="ultimo-titulo">{e.codigo}</span>
-                      <span className="ultimo-meta">{e.modulo}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                paleta={paletaNiveles}
+                centroLabel="niveles"
+              />
             </div>
           </div>
         </>
