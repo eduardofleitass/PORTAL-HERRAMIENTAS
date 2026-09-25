@@ -5,13 +5,16 @@
     "password": "admin",
     "nombre": "Administrador",
     "rol": "admin",
-    "avatar": "uploads/avatars/1790307843796-483868722.jpg"
+    "avatar": "uploads\\avatars\\1790333367594-28471362.png",
+    "activo": true
   },
   {
     "id": 2,
     "username": "eduardo.fleitas",
-    "password": "1234",
+    "password": "edufleitas1",
     "nombre": "Eduardo Fleitas",
-    "rol": "usuario"
+    "rol": "admin",
+    "avatar": "uploads\\avatars\\1790334777087-726999356.jpg",
+    "activo": true
   }
 ]

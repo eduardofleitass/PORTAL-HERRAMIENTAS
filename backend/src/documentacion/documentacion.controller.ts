@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Delete, Param, Query, Body,
+  Controller, Get, Post, Patch, Delete, Param, Query, Body,
   UseGuards, UseInterceptors, UploadedFile, BadRequestException
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -56,5 +56,15 @@ export class DocumentacionController {
   @Roles("admin")
   delete(@Param("id") id: string) {
     return this.documentacionService.delete(Number(id));
+  }
+
+  @Patch(":id")
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles("admin")
+  update(
+    @Param("id") id: string,
+    @Body() body: { titulo: string; descripcion: string; seccion: string }
+  ) {
+    return this.documentacionService.update(Number(id), body);
   }
 }

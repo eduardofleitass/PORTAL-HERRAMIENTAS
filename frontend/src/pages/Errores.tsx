@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Pencil, Trash2, X } from "lucide-react";
+import { Pencil, Trash2, RotateCcw } from "lucide-react";
+import ConfirmModal from "../components/ConfirmModal";
 
 interface ErrorItem {
   id: number;
@@ -17,7 +17,6 @@ interface ErrorItem {
 
 function Errores() {
   const { usuario } = useAuth();
-  const navigate = useNavigate();
 
   const [errores, setErrores] = useState<ErrorItem[]>([]);
   const [seleccionado, setSeleccionado] = useState<ErrorItem | null>(null);
@@ -38,18 +37,20 @@ function Errores() {
   const [nuevosTags, setNuevosTags] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [errorGuardar, setErrorGuardar] = useState("");
+  const [confirmEliminar, setConfirmEliminar] = useState<number | null>(null);
 
-  useEffect(() => {
-    async function cargar() {
-      try {
-        const respuesta = await fetch("http://localhost:3001/errores");
-        const datos = await respuesta.json();
-        setErrores(datos);
-      } catch { setErrorMsg("No se pudieron cargar los errores"); }
-      finally { setLoading(false); }
-    }
-    cargar();
-  }, []);
+  async function cargar() {
+    setLoading(true);
+    setErrorMsg("");
+    try {
+      const respuesta = await fetch("http://localhost:3001/errores");
+      const datos = await respuesta.json();
+      setErrores(datos);
+    } catch { setErrorMsg("No se pudieron cargar los errores"); }
+    finally { setLoading(false); }
+  }
+
+  useEffect(() => { cargar(); }, []);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -135,7 +136,6 @@ function Errores() {
   }
 
   async function eliminarError(id: number) {
-    if (!confirm("¿Seguro que queres eliminar este error?")) return;
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
@@ -149,6 +149,7 @@ function Errores() {
   }
 
   return (
+    <>
     <div className="errores-page">
       <header className="page-header">
         <h1>Buscar Errores</h1>
@@ -212,7 +213,16 @@ function Errores() {
               </div>
             </div>
             {loading && <p className="loading">Cargando errores...</p>}
-            {errorMsg && <p className="error">{errorMsg}</p>}
+            {errorMsg && (
+              <div className="error">
+                <p>{errorMsg}</p>
+                <div className="error-retry">
+                  <button className="btn-retry" onClick={cargar}>
+                    <RotateCcw size={14} /> Reintentar
+                  </button>
+                </div>
+              </div>
+            )}
             {!loading && !errorMsg && (
               <div className="lista-errores">
                 {filtrados.length === 0 && <p>No hay errores con esos filtros.</p>}
@@ -231,7 +241,7 @@ function Errores() {
                         <button className="btn-icon btn-icon-editar" title="Editar" onClick={() => iniciarEdicion(err)}>
                           <Pencil size={16} />
                         </button>
-                        <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={() => eliminarError(err.id)}>
+                        <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={() => setConfirmEliminar(err.id)}>
                           <Trash2 size={16} />
                         </button>
                       </div>
@@ -264,6 +274,22 @@ function Errores() {
         </div>
       )}
     </div>
+      <ConfirmModal
+        visible={confirmEliminar !== null}
+        title="Eliminar error"
+        message="¿Seguro que queres eliminar este error? Esta accion no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+        onConfirm={() => {
+          if (confirmEliminar !== null) {
+            eliminarError(confirmEliminar);
+            setConfirmEliminar(null);
+          }
+        }}
+        onCancel={() => setConfirmEliminar(null)}
+      />
+    </>
   );
 }
 

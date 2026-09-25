@@ -10,6 +10,7 @@ export interface UsuarioEntity {
   nombre: string;
   rol: 'admin' | 'usuario';
   avatar?: string;
+  activo?: boolean;
 }
 
 export interface CrearUsuarioDto {
@@ -17,6 +18,7 @@ export interface CrearUsuarioDto {
   password: string;
   nombre: string;
   rol: 'admin' | 'usuario';
+  activo?: boolean;
 }
 
 @Injectable()
@@ -62,6 +64,7 @@ export class UsuariosService {
       password: dto.password,
       nombre: dto.nombre,
       rol: dto.rol,
+      activo: true,
     };
     all.push(nuevo);
     this.writeAll(all);
@@ -87,6 +90,7 @@ export class UsuariosService {
       ...(dto.password && { password: dto.password }),
       ...(dto.nombre && { nombre: dto.nombre }),
       ...(dto.rol && { rol: dto.rol }),
+      ...(dto.activo !== undefined && { activo: dto.activo }),
     };
     all[idx] = actualizado;
     this.writeAll(all);

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Trash2, X } from "lucide-react";
+import { Trash2, RotateCcw, Pencil } from "lucide-react";
+import ConfirmModal from "../components/ConfirmModal";
 
 interface Documento {
   id: number;
@@ -16,7 +16,6 @@ interface Documento {
 
 function Documentacion() {
   const { usuario } = useAuth();
-  const navigate = useNavigate();
 
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [seleccionado, setSeleccionado] = useState<Documento | null>(null);
@@ -31,18 +30,26 @@ function Documentacion() {
   const [archivo, setArchivo] = useState<File | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [errorGuardar, setErrorGuardar] = useState("");
+  const [confirmEliminar, setConfirmEliminar] = useState<number | null>(null);
 
-  useEffect(() => {
-    async function cargar() {
-      try {
-        const respuesta = await fetch("http://localhost:3001/documentacion");
-        const datos = await respuesta.json();
-        setDocumentos(datos);
-      } catch { setError("No se pudieron cargar los documentos"); }
-      finally { setLoading(false); }
-    }
-    cargar();
-  }, []);
+  // Edicion
+  const [editandoDoc, setEditandoDoc] = useState<Documento | null>(null);
+  const [editTitulo, setEditTitulo] = useState("");
+  const [editDescripcion, setEditDescripcion] = useState("");
+  const [editSeccion, setEditSeccion] = useState("");
+
+  async function cargar() {
+    setLoading(true);
+    setError("");
+    try {
+      const respuesta = await fetch("http://localhost:3001/documentacion");
+      const datos = await respuesta.json();
+      setDocumentos(datos);
+    } catch { setError("No se pudieron cargar los documentos"); }
+    finally { setLoading(false); }
+  }
+
+  useEffect(() => { cargar(); }, []);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -82,7 +89,6 @@ function Documentacion() {
   }
 
   async function eliminarDocumento(id: number) {
-    if (!confirm("¿Seguro que queres eliminar este documento?")) return;
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
@@ -95,7 +101,50 @@ function Documentacion() {
     } catch { alert("Error de conexion"); }
   }
 
+  function iniciarEdicion(doc: Documento) {
+    setEditandoDoc(doc);
+    setEditTitulo(doc.titulo);
+    setEditDescripcion(doc.descripcion);
+    setEditSeccion(doc.seccion);
+    setSeleccionado(null);
+  }
+
+  function cerrarEdicion() {
+    setEditandoDoc(null);
+    setEditTitulo("");
+    setEditDescripcion("");
+    setEditSeccion("");
+  }
+
+  async function guardarEdicion(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editandoDoc) return;
+    const token = localStorage.getItem("token");
+    if (!token) { alert("No hay sesion"); return; }
+    setGuardando(true);
+    try {
+      const respuesta = await fetch(`http://localhost:3001/documentacion/${editandoDoc.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ titulo: editTitulo, descripcion: editDescripcion, seccion: editSeccion })
+      });
+      if (!respuesta.ok) throw new Error("Error al actualizar");
+      const actualizado = await respuesta.json();
+      setDocumentos((prev) => prev.map((d) => d.id === editandoDoc.id ? actualizado : d));
+      if (seleccionado?.id === editandoDoc.id) setSeleccionado(actualizado);
+      cerrarEdicion();
+    } catch {
+      alert("Error al guardar los cambios");
+    } finally {
+      setGuardando(false);
+    }
+  }
+
   return (
+    <>
     <div className="documentacion-page">
       <header className="page-header">
         <h1>Documentacion</h1>
@@ -137,7 +186,16 @@ function Documentacion() {
               </select>
             </div>
             {loading && <p className="loading">Cargando documentos...</p>}
-            {error && <p className="error">{error}</p>}
+            {error && (
+              <div className="error">
+                <p>{error}</p>
+                <div className="error-retry">
+                  <button className="btn-retry" onClick={cargar}>
+                    <RotateCcw size={14} /> Reintentar
+                  </button>
+                </div>
+              </div>
+            )}
             {!loading && !error && (
               <div className="lista-documentos">
                 {filtrados.length === 0 && <p>No hay documentos en esta seccion.</p>}
@@ -151,11 +209,14 @@ function Documentacion() {
                       <span>{(doc.tamano / 1024).toFixed(1)} KB</span>
                     </div>
                     {usuario?.rol === "admin" && (
-                      <div className="documento-acciones">
-                        <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={(e) => { e.stopPropagation(); eliminarDocumento(doc.id); }}>
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+                    <div className="documento-acciones">
+                      <button className="btn-icon btn-icon-editar" title="Editar" onClick={(e) => { e.stopPropagation(); iniciarEdicion(doc); }}>
+                        <Pencil size={16} />
+                      </button>
+                      <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={(e) => { e.stopPropagation(); setConfirmEliminar(doc.id); }}>
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                     )}
                   </div>
                 ))}
@@ -178,7 +239,7 @@ function Documentacion() {
                   <span>{(seleccionado.tamano / 1024).toFixed(1)} KB</span>
                 </div>
                 <a href={`http://localhost:3001${seleccionado.rutaArchivo}`} target="_blank" rel="noopener noreferrer" className="btn-descargar">
-                  Descargar
+                  Ver
                 </a>
               </div>
             ) : (
@@ -190,6 +251,53 @@ function Documentacion() {
         </div>
       )}
     </div>
+
+      {/* Modal de edicion de documento */}
+      {editandoDoc && (
+        <div className="modal-overlay" onClick={cerrarEdicion}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Editar Documento</h2>
+              <button className="btn-cerrar-detalle" onClick={cerrarEdicion}>✕</button>
+            </div>
+            <form onSubmit={guardarEdicion}>
+              <div className="form-grupo">
+                <label>Titulo:</label>
+                <input type="text" value={editTitulo} onChange={(e) => setEditTitulo(e.target.value)} required />
+              </div>
+              <div className="form-grupo">
+                <label>Descripcion:</label>
+                <input type="text" value={editDescripcion} onChange={(e) => setEditDescripcion(e.target.value)} />
+              </div>
+              <div className="form-grupo">
+                <label>Seccion:</label>
+                <input type="text" value={editSeccion} onChange={(e) => setEditSeccion(e.target.value)} required placeholder="Ej: Manual de Sistemas" />
+              </div>
+              <div className="form-botones">
+                <button type="submit" disabled={guardando}>{guardando ? "Guardando..." : "Guardar cambios"}</button>
+                <button type="button" className="btn-cancelar" onClick={cerrarEdicion}>Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <ConfirmModal
+        visible={confirmEliminar !== null}
+        title="Eliminar documento"
+        message="¿Seguro que queres eliminar este documento? Esta accion no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+        onConfirm={() => {
+          if (confirmEliminar !== null) {
+            eliminarDocumento(confirmEliminar);
+            setConfirmEliminar(null);
+          }
+        }}
+        onCancel={() => setConfirmEliminar(null)}
+      />
+    </>
   );
 }
 

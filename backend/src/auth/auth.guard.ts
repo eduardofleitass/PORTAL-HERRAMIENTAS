@@ -29,6 +29,10 @@ export class AuthGuard implements CanActivate {
     try {
       // Verificamos el token con AuthService
       const payload = this.authService.verifyToken(token);
+      // Verificamos que el usuario siga activo
+      if (!this.authService.isUserActive(payload.sub)) {
+        throw new UnauthorizedException('Usuario inhabilitado');
+      }
       // Guardamos los datos del usuario en la request para que el controller los use
       request.user = payload;
       return true; // Permite el acceso

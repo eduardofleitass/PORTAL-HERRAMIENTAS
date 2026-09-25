@@ -106,4 +106,15 @@ export class DocumentacionService {
     this.writeFile(docs);
     return { message: `Documento ${id} eliminado` };
   }
+
+  update(id: number, dto: { titulo: string; descripcion: string; seccion: string }): Documento | { message: string } {
+    const docs = this.readFile();
+    const index = docs.findIndex((d) => d.id === id);
+    if (index === -1) {
+      return { message: `Documento ${id} no encontrado` };
+    }
+    docs[index] = { ...docs[index], titulo: dto.titulo, descripcion: dto.descripcion, seccion: dto.seccion };
+    this.writeFile(docs);
+    return docs[index];
+  }
 }

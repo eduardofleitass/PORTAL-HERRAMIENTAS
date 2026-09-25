@@ -72,11 +72,11 @@ function Dashboard() {
   const maxNiveles = metricas ? Math.max(...Object.values(metricas.procedimientosPorNivel), 1) : 1;
 
   const colores = {
-    azul: "linear-gradient(90deg, #3b82f6, #22d3ee)",
-    verde: "linear-gradient(90deg, #34d399, #059669)",
-    naranja: "linear-gradient(90deg, #fbbf24, #f59e0b)",
-    rojo: "linear-gradient(90deg, #f87171, #ef4444)",
-    morado: "linear-gradient(90deg, #a78bfa, #8b5cf6)",
+    primario: "linear-gradient(90deg, #c9965e, #a67c45)",
+    verde: "linear-gradient(90deg, #5a9a6a, #3d7a4e)",
+    naranja: "linear-gradient(90deg, #b8926b, #8a6a4b)",
+    rojo: "linear-gradient(90deg, #b86868, #8a4848)",
+    morado: "linear-gradient(90deg, #7a6a9e, #5a4a7e)",
   };
 
   return (
@@ -130,7 +130,7 @@ function Dashboard() {
               <h3><ClipboardList size={16} /> Procedimientos por modulo</h3>
               <div className="barras-lista">
                 {Object.entries(metricas.procedimientosPorModulo).map(([label, val]) =>
-                  barraHorizontal(label, val, maxProcs, colores.azul)
+                  barraHorizontal(label, val, maxProcs, colores.primario)
                 )}
               </div>
             </div>

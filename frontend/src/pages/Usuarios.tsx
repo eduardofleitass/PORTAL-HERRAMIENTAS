@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Plus, Pencil, Trash2, Shield, User, Camera } from "lucide-react";
+import { Plus, Pencil, Trash2, Shield, User, Camera, RotateCcw } from "lucide-react";
+import ConfirmModal from "../components/ConfirmModal";
 
 interface Usuario {
   id: number;
@@ -8,6 +9,7 @@ interface Usuario {
   nombre: string;
   rol: "admin" | "usuario";
   avatar?: string;
+  activo?: boolean;
 }
 
 interface FormData {
@@ -15,6 +17,7 @@ interface FormData {
   password: string;
   nombre: string;
   rol: "admin" | "usuario";
+  activo: boolean;
 }
 
 function avatarUrl(avatar?: string): string {
@@ -34,14 +37,17 @@ function Usuarios() {
     password: "",
     nombre: "",
     rol: "usuario",
+    activo: true,
   });
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [subiendoAvatar, setSubiendoAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [confirmEliminar, setConfirmEliminar] = useState<number | null>(null);
 
   async function cargar() {
     setLoading(true);
+    setError("");
     try {
       const res = await fetch("http://localhost:3001/usuarios", {
         headers: { Authorization: `Bearer ${token}` },
@@ -49,7 +55,6 @@ function Usuarios() {
       if (!res.ok) throw new Error("Error al cargar usuarios");
       const data = await res.json();
       setUsuarios(data);
-      setError("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error desconocido");
     } finally {
@@ -63,7 +68,7 @@ function Usuarios() {
 
   function abrirCrear() {
     setEditando(null);
-    setForm({ username: "", password: "", nombre: "", rol: "usuario" });
+    setForm({ username: "", password: "", nombre: "", rol: "usuario", activo: true });
     setAvatarPreview(null);
     setAvatarFile(null);
     setMostrarForm(true);
@@ -71,7 +76,7 @@ function Usuarios() {
 
   function abrirEditar(u: Usuario) {
     setEditando(u);
-    setForm({ username: u.username, password: "", nombre: u.nombre, rol: u.rol });
+    setForm({ username: u.username, password: "", nombre: u.nombre, rol: u.rol, activo: u.activo !== false });
     setAvatarPreview(u.avatar ? avatarUrl(u.avatar) : null);
     setAvatarFile(null);
     setMostrarForm(true);
@@ -123,6 +128,26 @@ function Usuarios() {
     }
   }
 
+  async function toggleActivo(u: Usuario) {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    const nuevoEstado = !(u.activo !== false);
+    try {
+      const res = await fetch(`http://localhost:3001/usuarios/${u.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ activo: nuevoEstado }),
+      });
+      if (!res.ok) throw new Error("Error al cambiar estado");
+      cargar();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error al cambiar estado");
+    }
+  }
+
   async function subirAvatar(userId: number) {
     if (!avatarFile) return;
     setSubiendoAvatar(true);
@@ -141,7 +166,6 @@ function Usuarios() {
   }
 
   async function eliminar(id: number) {
-    if (!confirm("Seguro que queres eliminar este usuario?")) return;
     try {
       const res = await fetch(`http://localhost:3001/usuarios/${id}`, {
         method: "DELETE",
@@ -155,6 +179,7 @@ function Usuarios() {
   }
 
   return (
+    <>
     <div className="page-container">
       <div className="page-header">
         <h1>Usuarios</h1>
@@ -163,7 +188,16 @@ function Usuarios() {
         </button>
       </div>
 
-      {error && <p className="error-msg">{error}</p>}
+      {error && (
+        <div className="error">
+          <p>{error}</p>
+          <div className="error-retry">
+            <button className="btn-retry" onClick={cargar}>
+              <RotateCcw size={14} /> Reintentar
+            </button>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <p className="loading-msg">Cargando...</p>
@@ -175,17 +209,18 @@ function Usuarios() {
                 <th>Usuario</th>
                 <th>Nombre</th>
                 <th>Rol</th>
+                <th>Estado</th>
                 <th style={{ textAlign: "right" }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {usuarios.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="td-vacio">No hay usuarios</td>
+                  <td colSpan={5} className="td-vacio">No hay usuarios</td>
                 </tr>
               )}
               {usuarios.map((u) => (
-                <tr key={u.id}>
+                <tr key={u.id} className={u.activo === false ? "usuario-inactivo" : ""}>
                   <td>
                     <div className="td-user">
                       <div className="td-avatar">
@@ -205,11 +240,20 @@ function Usuarios() {
                       {u.rol}
                     </span>
                   </td>
+                  <td>
+                    <button
+                      className={`toggle-estado ${u.activo !== false ? "activo" : "inactivo"}`}
+                      onClick={() => toggleActivo(u)}
+                      title={u.activo !== false ? "Desactivar usuario" : "Activar usuario"}
+                    >
+                      <span className="toggle-dot" />
+                    </button>
+                  </td>
                   <td style={{ textAlign: "right" }}>
                     <button className="btn-icon" onClick={() => abrirEditar(u)} title="Editar">
                       <Pencil size={14} />
                     </button>
-                    <button className="btn-icon btn-danger" onClick={() => eliminar(u.id)} title="Eliminar">
+                    <button className="btn-icon btn-danger" onClick={() => setConfirmEliminar(u.id)} title="Eliminar">
                       <Trash2 size={14} />
                     </button>
                   </td>
@@ -293,6 +337,16 @@ function Usuarios() {
                 />
               </div>
               <div className="form-group">
+                <label>Estado</label>
+                <select
+                  value={form.activo ? "true" : "false"}
+                  onChange={(e) => setForm({ ...form, activo: e.target.value === "true" })}
+                >
+                  <option value="true">Activo</option>
+                  <option value="false">Inactivo</option>
+                </select>
+              </div>
+              <div className="form-group">
                 <label>Rol</label>
                 <select
                   value={form.rol}
@@ -315,6 +369,23 @@ function Usuarios() {
         </div>
       )}
     </div>
+
+      <ConfirmModal
+        visible={confirmEliminar !== null}
+        title="Eliminar usuario"
+        message="¿Seguro que queres eliminar este usuario? Esta accion no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+        onConfirm={() => {
+          if (confirmEliminar !== null) {
+            eliminar(confirmEliminar);
+            setConfirmEliminar(null);
+          }
+        }}
+        onCancel={() => setConfirmEliminar(null)}
+      />
+    </>
   );
 }
 

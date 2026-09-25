@@ -11,6 +11,7 @@ export interface Usuario{
     nombre:string,
     rol: 'admin' | 'usuario',
     avatar?: string;
+    activo?: boolean;
 }
 
 @Injectable()
@@ -37,6 +38,9 @@ export class AuthService {
         if (!usuario || usuario.password !== password){
             throw new UnauthorizedException('Credenciales invalidas');
         }
+        if (usuario.activo === false) {
+            throw new UnauthorizedException('Usuario inhabilitado');
+        }
         const paylaod={
             sub: usuario.id,
             username: usuario.username,
@@ -54,13 +58,19 @@ export class AuthService {
     } {
         const decoded = jwt.verify(token, this.jwtSecret);
         if (typeof decoded === 'string') {
-            throw new Error('Token inválido');
+            throw new Error('Token invalido');
         }
         return {
             sub: Number(decoded.sub),
             username: decoded.username as string,
             rol: decoded.rol as string,
         };
+    }
+
+    isUserActive(userId: number): boolean {
+        const all = this.findAll();
+        const user = all.find((u) => u.id === userId);
+        return user ? (user.activo !== false) : false;
     }
 
     updateAvatar(userId: number, avatarPath: string): Omit<Usuario, 'password'> | undefined {

@@ -3,10 +3,30 @@
     "id": 1,
     "titulo": "MANUAL DE HELPEDSK 2026",
     "descripcion": "Manual de soporte en sistemas 2026",
-    "seccion": "Manuales sistema",
+    "seccion": "Manuales sistemas",
     "nombreArchivo": "MANUAL DE HELPDESK 2026.pdf",
     "rutaArchivo": "/uploads/doc_1_1790275968385.pdf",
     "tamano": 4511389,
     "fechaSubida": "2026-09-24T18:52:48.390Z"
+  },
+  {
+    "id": 2,
+    "titulo": "MANUAL BOTMAKER 2026",
+    "descripcion": "Manual operativo de uso Botmaker",
+    "seccion": "Manuales sistemas",
+    "nombreArchivo": "MANUAL BOTMAKER GENERAL 2026.pdf",
+    "rutaArchivo": "/uploads/doc_2_1790339459413.pdf",
+    "tamano": 1148396,
+    "fechaSubida": "2026-09-25T12:30:59.429Z"
+  },
+  {
+    "id": 3,
+    "titulo": "ATAJOS SOPORTE ",
+    "descripcion": "Notas de atajos de soporte para desplazarse en la BD y solucionar ciertas cuestiones ",
+    "seccion": "Manuales Soporte",
+    "nombreArchivo": "ATAJOS SOPORTE.md",
+    "rutaArchivo": "/uploads/doc_3_1790340449276.md",
+    "tamano": 10598,
+    "fechaSubida": "2026-09-25T12:47:29.279Z"
   }
 ]

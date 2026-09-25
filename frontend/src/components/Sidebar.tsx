@@ -8,7 +8,10 @@ import {
   BookOpen,
   LogOut,
   Users,
-  Camera
+  Camera,
+  PanelLeftOpen,
+  ChevronLeft,
+  X
 } from "lucide-react";
 
 function avatarUrl(avatar?: string): string {
@@ -16,7 +19,15 @@ function avatarUrl(avatar?: string): string {
   return `http://localhost:3001/${avatar}`;
 }
 
-function Sidebar() {
+interface SidebarProps {
+  visible: boolean;
+  onToggle: () => void;
+  mobileOpen: boolean;
+  onMobileClose: () => void;
+  onSearchOpen: () => void;
+}
+
+function Sidebar({ visible, onToggle, mobileOpen, onMobileClose, onSearchOpen }: SidebarProps) {
   const { usuario, logout, token, updateUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -77,11 +88,23 @@ function Sidebar() {
 
   return (
     <>
-      <aside className="sidebar">
+      <aside className={`sidebar ${visible ? "" : "colapsado"} ${mobileOpen ? "visible-mobile" : ""}`}>
         <div className="sidebar-top">
           <div className="sidebar-brand">
             <span>Portal de herramientas</span>
           </div>
+          <button className="sidebar-toggle-btn" onClick={onToggle} title="Ocultar sidebar">
+            <ChevronLeft size={16} />
+          </button>
+          <button className="sidebar-mobile-close" onClick={onMobileClose} title="Cerrar">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="sidebar-search-bar" onClick={() => { onSearchOpen(); onMobileClose(); }}>
+          <Search size={14} />
+          <span className="sidebar-search-text">Buscar...</span>
+          <span className="sidebar-search-kbd">Ctrl K</span>
         </div>
 
         <nav className="sidebar-nav">
@@ -93,6 +116,7 @@ function Sidebar() {
                 key={link.path}
                 to={link.path}
                 className={`sidebar-link ${isActive ? "active" : ""}`}
+                onClick={() => onMobileClose()}
               >
                 <span className={`sidebar-icon ${isActive ? "active" : ""}`}>
                   <Icon size={18} strokeWidth={2} />
@@ -112,6 +136,7 @@ function Sidebar() {
                     key={link.path}
                     to={link.path}
                     className={`sidebar-link ${isActive ? "active" : ""}`}
+                    onClick={() => onMobileClose()}
                   >
                     <span className={`sidebar-icon ${isActive ? "active" : ""}`}>
                       <Icon size={18} strokeWidth={2} />
@@ -151,6 +176,13 @@ function Sidebar() {
           )}
         </div>
       </aside>
+
+      {/* Pestaña para mostrar sidebar cuando esta oculto */}
+      {!visible && !mobileOpen && (
+        <div className="sidebar-tab" onClick={onToggle} title="Mostrar sidebar">
+          <PanelLeftOpen size={14} />
+        </div>
+      )}
 
       {/* Modal cambiar avatar */}
       {mostrarAvatarModal && (

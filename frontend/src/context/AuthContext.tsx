@@ -14,6 +14,8 @@ interface AuthContextType {
   login: (token: string, usuario: Usuario) => void;
   logout: () => void;
   updateUser: (usuario: Usuario) => void;
+  logoutWithMessage: (message: string) => void;
+  logoutMessage: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,9 +29,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return localStorage.getItem("token");
   });
 
+  const [logoutMessage, setLogoutMessage] = useState<string>("");
+
   function login(token: string, usuario: Usuario) {
     localStorage.setItem("token", token);
     localStorage.setItem("usuario", JSON.stringify(usuario));
+    setLogoutMessage("");
     setToken(token);
     setUsuario(usuario);
   }
@@ -37,6 +42,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   function logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("usuario");
+    setLogoutMessage("");
+    setToken(null);
+    setUsuario(null);
+  }
+
+  function logoutWithMessage(message: string) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("usuario");
+    setLogoutMessage(message);
     setToken(null);
     setUsuario(null);
   }
@@ -47,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ usuario, token, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ usuario, token, login, logout, logoutWithMessage, updateUser, logoutMessage }}>
       {children}
     </AuthContext.Provider>
   );

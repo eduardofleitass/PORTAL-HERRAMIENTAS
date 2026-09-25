@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Pencil, Trash2, X } from "lucide-react";
+import { Pencil, Trash2, RotateCcw } from "lucide-react";
+import ConfirmModal from "../components/ConfirmModal";
 
 interface Paso {
   orden: number;
@@ -19,7 +19,6 @@ interface Procedimiento {
 
 function Procedimientos() {
   const { usuario } = useAuth();
-  const navigate = useNavigate();
 
   const [procedimientos, setProcedimientos] = useState<Procedimiento[]>([]);
   const [seleccionado, setSeleccionado] = useState<Procedimiento | null>(null);
@@ -36,21 +35,23 @@ function Procedimientos() {
   const [nuevosPasos, setNuevosPasos] = useState<Paso[]>([{ orden: 1, descripcion: "" }]);
   const [guardando, setGuardando] = useState(false);
   const [errorGuardar, setErrorGuardar] = useState("");
+  const [confirmEliminar, setConfirmEliminar] = useState<number | null>(null);
 
-  useEffect(() => {
-    async function cargar() {
-      try {
-        const respuesta = await fetch("http://localhost:3001/procedimientos");
-        const datos = await respuesta.json();
-        setProcedimientos(datos);
-      } catch (err) {
-        setError("No se pudieron cargar los procedimientos");
-      } finally {
-        setLoading(false);
-      }
+  async function cargar() {
+    setLoading(true);
+    setError("");
+    try {
+      const respuesta = await fetch("http://localhost:3001/procedimientos");
+      const datos = await respuesta.json();
+      setProcedimientos(datos);
+    } catch (err) {
+      setError("No se pudieron cargar los procedimientos");
+    } finally {
+      setLoading(false);
     }
-    cargar();
-  }, []);
+  }
+
+  useEffect(() => { cargar(); }, []);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -136,7 +137,6 @@ function Procedimientos() {
   }
 
   async function eliminarProcedimiento(id: number) {
-    if (!confirm("¿Seguro que queres eliminar este procedimiento?")) return;
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
@@ -157,6 +157,7 @@ function Procedimientos() {
   }
 
   return (
+    <>
     <div className="procedimientos-page">
       <header className="page-header">
         <h1>Procedimientos</h1>
@@ -210,7 +211,16 @@ function Procedimientos() {
               </select>
             </div>
             {loading && <p className="loading">Cargando procedimientos...</p>}
-            {error && <p className="error">{error}</p>}
+            {error && (
+              <div className="error">
+                <p>{error}</p>
+                <div className="error-retry">
+                  <button className="btn-retry" onClick={cargar}>
+                    <RotateCcw size={14} /> Reintentar
+                  </button>
+                </div>
+              </div>
+            )}
             {!loading && !error && (
               <div className="lista-procedimientos">
                 {filtrados.length === 0 && <p>No hay procedimientos para este modulo.</p>}
@@ -229,7 +239,7 @@ function Procedimientos() {
                         <button className="btn-icon btn-icon-editar" title="Editar" onClick={() => iniciarEdicion(proc)}>
                           <Pencil size={16} />
                         </button>
-                        <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={() => eliminarProcedimiento(proc.id)}>
+                        <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={() => setConfirmEliminar(proc.id)}>
                           <Trash2 size={16} />
                         </button>
                       </div>
@@ -267,6 +277,23 @@ function Procedimientos() {
         </div>
       )}
     </div>
+
+      <ConfirmModal
+        visible={confirmEliminar !== null}
+        title="Eliminar procedimiento"
+        message="¿Seguro que queres eliminar este procedimiento? Esta accion no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+        onConfirm={() => {
+          if (confirmEliminar !== null) {
+            eliminarProcedimiento(confirmEliminar);
+            setConfirmEliminar(null);
+          }
+        }}
+        onCancel={() => setConfirmEliminar(null)}
+      />
+    </>
   );
 }
 
