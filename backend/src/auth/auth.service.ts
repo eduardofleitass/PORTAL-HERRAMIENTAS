@@ -26,7 +26,40 @@ export class AuthService {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
     this.dataPath = path.join(__dirname, '..', '..', 'data', 'usuarios.json');
+    this.asegurarArchivo();
     this.migrarPasswordsEnClaro();
+  }
+
+  /**
+   * Si usuarios.json no existe (primer arranque o repo recien clonado),
+   * lo crea a partir de usuarios.example.json.
+   */
+  private asegurarArchivo(): void {
+    try {
+      if (fs.existsSync(this.dataPath)) return;
+
+      const ejemploPath = path.join(path.dirname(this.dataPath), 'usuarios.example.json');
+      if (fs.existsSync(ejemploPath)) {
+        fs.copyFileSync(ejemploPath, this.dataPath);
+        console.warn('[auth] usuarios.json no existia: creado desde usuarios.example.json');
+      } else {
+        // Sin plantilla: crear un admin por defecto
+        const base: Usuario[] = [
+          {
+            id: 1,
+            username: 'admin',
+            password: 'admin',
+            nombre: 'Administrador',
+            rol: 'admin',
+            activo: true,
+          },
+        ];
+        fs.writeFileSync(this.dataPath, JSON.stringify(base, null, 2), 'utf-8');
+        console.warn('[auth] usuarios.json no existia: creado con admin/admin por defecto');
+      }
+    } catch (err) {
+      console.error('[auth] No se pudo asegurar usuarios.json:', err);
+    }
   }
 
   private findAll(): Usuario[] {
