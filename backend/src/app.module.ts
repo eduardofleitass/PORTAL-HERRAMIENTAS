@@ -11,7 +11,6 @@ import { UsuariosModule } from './usuarios/usuarios.module.js';
 import { MetricasModule } from './metricas/metricas.module.js';
 import { LogsModule } from './logs/logs.module.js';
 import { LogsService } from './logs/logs.service.js';
-import { LogsInterceptor } from './logs/logs.interceptor.js';
 
 @Module({
   imports: [
@@ -25,14 +24,6 @@ import { LogsInterceptor } from './logs/logs.interceptor.js';
     LogsModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    // Interceptor global de auditoria (usa LogsService exportado por LogsModule)
-    {
-      provide: APP_INTERCEPTOR,
-      useFactory: (logsService: LogsService) => new LogsInterceptor(logsService),
-      inject: [LogsService],
-    },
-  ],
+  providers: [AppService],
 })
 export class AppModule {}

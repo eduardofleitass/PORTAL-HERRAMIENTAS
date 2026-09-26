@@ -3,8 +3,7 @@
 /node_modules
 /build
 
-# Logs
-logs
+# Logs (solo archivos, no el modulo src/logs/)
 *.log
 npm-debug.log*
 pnpm-debug.log*
@@ -61,6 +60,7 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 # Datos sensibles y de runtime (no versionar)
 /data/usuarios.json
 /data/logs.json
+/data/documentacion.json
 
 # Plantillas de ejemplo SI se versionan
 !/data/usuarios.example.json
