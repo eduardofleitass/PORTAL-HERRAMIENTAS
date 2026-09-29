@@ -197,8 +197,8 @@ function Procedimientos() {
             {nuevosPasos.map((paso, index) => (
               <div key={index} className="paso-input">
                 <span>{paso.orden}.</span>
-                <input type="text" value={paso.descripcion} onChange={(e) => cambiarPaso(index, e.target.value)} placeholder={`Descripcion del paso ${paso.orden}`} />
-                {nuevosPasos.length > 1 && <button type="button" onClick={() => quitarPaso(index)}>❌</button>}
+                <input type="text" value={paso.descripcion} onChange={(e) => cambiarPaso(index, e.target.value)} placeholder={`Descripcion del paso`} />
+                {nuevosPasos.length > 1 && <button type="button" onClick={() => quitarPaso(index)}>X</button>}
               </div>
             ))}
             <button type="button" className="btn-agregar" onClick={agregarPaso}>+ Agregar paso</button>
@@ -288,7 +288,7 @@ function Procedimientos() {
                   </div>
                   <h4>Pasos:</h4>
                   <ol className="pasos-lista">
-                    {seleccionado.pasos.map((paso) => <li key={paso.orden}><strong>Paso {paso.orden}:</strong> {paso.descripcion}</li>)}
+                    {seleccionado.pasos.map((paso) => <li key={paso.orden}>{paso.descripcion}</li>)}
                   </ol>
               </div>
             ) : (

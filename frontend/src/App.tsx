@@ -1,5 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from "react";
-import { Route, Routes, BrowserRouter, useLocation } from "react-router-dom";
+import { Route, Routes, HashRouter, useLocation } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import Sidebar from "./components/Sidebar";
@@ -28,7 +28,7 @@ function CargandoPagina() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <SessionInterceptor />
       <Suspense fallback={<CargandoPagina />}>
         <Routes>
@@ -36,7 +36,7 @@ function App() {
           <Route path="/*" element={<AppLayout />} />
         </Routes>
       </Suspense>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
