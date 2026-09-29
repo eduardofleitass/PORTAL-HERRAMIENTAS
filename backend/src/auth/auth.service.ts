@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as fs from 'fs';
-import { fileURLToPath } from 'url';
 import * as path from 'path';
+import { getDataPath } from '../data-path.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
@@ -23,9 +23,7 @@ export class AuthService {
   private readonly jwtSecret = 'portal-herramientas-secreto-2026';
 
   constructor() {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    this.dataPath = path.join(__dirname, '..', '..', 'data', 'usuarios.json');
+    this.dataPath = getDataPath('usuarios.json');
     this.asegurarArchivo();
     this.migrarPasswordsEnClaro();
   }

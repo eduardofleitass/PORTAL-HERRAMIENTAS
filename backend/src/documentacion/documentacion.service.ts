@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import * as fs from "fs";
-import { fileURLToPath } from "url";
+import * as fs from 'fs';
+import { getDataPath } from '../data-path.js';
 import * as path from "path";
 
 export interface Documento {
@@ -26,10 +26,9 @@ export class DocumentacionService {
   private readonly uploadsPath: string;
 
   constructor() {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    this.dataPath = path.join(__dirname, "..", "..", "data", "documentacion.json");
-    this.uploadsPath = path.join(__dirname, "..", "..", "uploads");
+    this.dataPath = getDataPath('documentacion.json');
+    const dataDir = path.dirname(this.dataPath);
+    this.uploadsPath = path.join(dataDir, '..', 'uploads');
   }
 
   private readFile(): Documento[] {

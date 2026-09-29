@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import * as fs from 'fs';
-import { fileURLToPath } from "url";
-import * as path from 'path';
+import { getDataPath } from '../data-path.js';
 
 export interface Error {
     id: number;
@@ -44,9 +43,7 @@ export class ErroresService {
     private readonly dataPath: string;
 
     constructor() {
-        const __filename = fileURLToPath(import.meta.url);
-        const __dirname = path.dirname(__filename);
-        this.dataPath = path.join(__dirname, '..', '..', 'data', 'errores.json');
+        this.dataPath = getDataPath('errores.json');
     }
 
     // Lee el archivo JSON

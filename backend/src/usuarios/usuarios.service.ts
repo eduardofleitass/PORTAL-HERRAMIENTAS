@@ -1,7 +1,7 @@
 import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import * as fs from 'fs';
-import { fileURLToPath } from 'url';
 import * as path from 'path';
+import { getDataPath } from '../data-path.js';
 import bcrypt from 'bcryptjs';
 
 const BCRYPT_ROUNDS = 10;
@@ -29,9 +29,7 @@ export class UsuariosService {
   private readonly dataPath: string;
 
   constructor() {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    this.dataPath = path.join(__dirname, '..', '..', 'data', 'usuarios.json');
+    this.dataPath = getDataPath('usuarios.json');
   }
 
   private readAll(): UsuarioEntity[] {

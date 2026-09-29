@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import * as fs from 'fs';
-import { fileURLToPath } from 'url';
-import * as path from 'path';
+import { getDataPath } from '../data-path.js';
 
 // Interfaz: define la forma que tienen los datos
 export interface Paso {
@@ -41,15 +40,7 @@ export class ProcedimientosService {
   private readonly dataPath: string;
 
   constructor() {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    this.dataPath = path.join(
-      __dirname,
-      '..',
-      '..',
-      'data',
-      'procedimientos.json'
-    );
+    this.dataPath = getDataPath('procedimientos.json');
   }
 
   // Lee el archivo JSON

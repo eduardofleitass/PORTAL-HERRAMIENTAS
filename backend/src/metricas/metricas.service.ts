@@ -1,16 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
-import { fileURLToPath } from 'url';
 import * as path from 'path';
+import { getDataPath } from '../data-path.js';
 
 @Injectable()
 export class MetricasService {
   private readonly dataPath: string;
 
   constructor() {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    this.dataPath = path.join(__dirname, '..', '..', 'data');
+    this.dataPath = getDataPath('');
   }
 
   private leerJSON(nombre: string) {

@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { AuthService } from './auth.service.js';
+import { getDataPath } from '../data-path.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,7 +46,7 @@ export class AuthController{
         const token = authHeader.replace('Bearer ', '');
         const decoded = this.authService.verifyToken(token);
         const raw = fs.readFileSync(
-            path.join(__dirname, '..', '..', 'data', 'usuarios.json'), 'utf-8'
+            getDataPath('usuarios.json'), 'utf-8'
         );
         const all = JSON.parse(raw);
         const user = all.find((u: any) => u.id === decoded.sub);
