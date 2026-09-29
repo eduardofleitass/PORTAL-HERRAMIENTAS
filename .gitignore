@@ -18,3 +18,7 @@ Builds
 **/build/
 **/coverage/
 **/*.tsbuildinfo
+
+Electron / empaquetado
+dist-electron/
+dist-electron_temp/
