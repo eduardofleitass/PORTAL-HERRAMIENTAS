@@ -11,6 +11,8 @@ import {
   User,
   Clock,
   RotateCcw,
+  Eye,
+  X,
 } from "lucide-react";
 import ConfirmModal from "../components/ConfirmModal";
 import Pagination from "../components/Pagination";
@@ -37,8 +39,27 @@ interface Resumen {
   ultimo: string | null;
 }
 
+const NOMBRES_ACCION: Record<string, string> = {
+  login: "Inicio de sesion",
+  logout: "Cierre de sesion",
+  procedimiento_creado: "Procedimiento creado",
+  procedimiento_actualizado: "Procedimiento actualizado",
+  procedimiento_eliminado: "Procedimiento eliminado",
+  error_creado: "Error registrado",
+  error_actualizado: "Error actualizado",
+  error_eliminado: "Error eliminado",
+  documento_subido: "Documento subido",
+  documento_actualizado: "Documento actualizado",
+  documento_eliminado: "Documento eliminado",
+  usuario_creado: "Usuario creado",
+  usuario_actualizado: "Usuario actualizado",
+  usuario_eliminado: "Usuario eliminado",
+  error_frontend: "Error frontend",
+  error_backend: "Error backend",
+};
+
 function Logs() {
-  const { usuario } = useAuth();
+  const { usuario, token } = useAuth();
   const toast = useToast();
 
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -49,13 +70,68 @@ function Logs() {
   const [busqueda, setBusqueda] = useState("");
   const [confirmLimpiar, setConfirmLimpiar] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [logSeleccionado, setLogSeleccionado] = useState<LogEntry | null>(null);
+  const [tabDetalle, setTabDetalle] = useState<"resumen" | "tecnico">("resumen");
+
+  function traducirDetalle(detalle: string | undefined, accion: string): string {
+    if (!detalle) return "Sin informacion adicional.";
+    
+    // Patrones comunes de logs
+    if (detalle.includes("POST /auth/login")) return "Alguien ingreso al sistema con su usuario y contrasena.";
+    if (detalle.includes("POST /auth/logout")) return "Alguien cerro su sesion y salio del sistema.";
+    if (detalle.includes("ReferenceError")) return "La aplicacion intento usar algo que no existe o no esta disponible.";
+    if (detalle.includes("TypeError")) return "Hubo un problema con el tipo de dato que se estaba usando.";
+    if (detalle.includes("SyntaxError")) return "Hay un error de escritura en el codigo de la aplicacion.";
+    if (detalle.includes("NetworkError") || detalle.includes("fetch") || detalle.includes("Failed to fetch")) return "La aplicacion no pudo conectarse con el servidor. Verifique su conexion a internet.";
+    if (detalle.includes("500") || detalle.includes("Internal Server Error")) return "El servidor tuvo un problema interno al procesar la solicitud.";
+    if (detalle.includes("404") || detalle.includes("Not Found")) return "La aplicacion busco algo que no existe en el servidor.";
+    if (detalle.includes("403") || detalle.includes("Forbidden")) return "El usuario no tiene permisos para realizar esta accion.";
+    if (detalle.includes("401") || detalle.includes("Unauthorized")) return "La sesion expiro o el usuario no esta identificado.";
+    if (detalle.includes("PATCH")) {
+      const match = detalle.match(/PATCH \/([^\/]+)\/(\d+)/);
+      if (match) {
+        const entidad = match[1].replace(/s$/, "").replace(/_/g, " ");
+        return `Se edito un ${entidad} existente en el sistema.`;
+      }
+      return "Se actualizo informacion en el sistema.";
+    }
+    if (detalle.includes("POST")) {
+      const match = detalle.match(/POST \/([^\/]+)/);
+      if (match) {
+        const entidad = match[1].replace(/s$/, "").replace(/_/g, " ");
+        return `Se creo un nuevo ${entidad} en el sistema.`;
+      }
+      return "Se registro nueva informacion en el sistema.";
+    }
+    if (detalle.includes("DELETE")) {
+      const match = detalle.match(/DELETE \/([^\/]+)\/(\d+)/);
+      if (match) {
+        const entidad = match[1].replace(/s$/, "").replace(/_/g, " ");
+        return `Se elimino un ${entidad} del sistema.`;
+      }
+      return "Se elimino informacion del sistema.";
+    }
+    if (detalle.includes("GET")) return "Alguien consulto informacion en el sistema.";
+    
+    // Fallback por tipo de accion
+    if (accion === "login") return "Se inicio sesion en el sistema.";
+    if (accion === "logout") return "Se cerro la sesion.";
+    if (accion.includes("creado")) return "Se creo un nuevo registro.";
+    if (accion.includes("actualizado")) return "Se modifico un registro existente.";
+    if (accion.includes("eliminado")) return "Se elimino un registro.";
+    if (accion.includes("error")) return "Ocurrio un error en el sistema.";
+    
+    return detalle;
+  }
 
   const cargar = useCallback(async () => {
     setError("");
     try {
+      const headers: Record<string, string> = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
       const [logsResp, resumenResp] = await Promise.all([
-        fetch("http://localhost:3001/logs"),
-        fetch("http://localhost:3001/logs/resumen"),
+        fetch("http://localhost:3001/logs", { headers }),
+        fetch("http://localhost:3001/logs/resumen", { headers }),
       ]);
       if (!logsResp.ok) throw new Error("Error al cargar logs");
       const datos = await logsResp.json();
@@ -66,7 +142,7 @@ function Logs() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
@@ -125,6 +201,21 @@ function Logs() {
     }
   };
 
+  function nombreAccion(accion: string): string {
+    return NOMBRES_ACCION[accion] || accion;
+  }
+
+  function resumenPorAccion(logsList: LogEntry[]) {
+    const map: Record<string, { label: string; count: number; nivel: string }> = {};
+    for (const l of logsList) {
+      if (!map[l.accion]) {
+        map[l.accion] = { label: nombreAccion(l.accion), count: 0, nivel: l.nivel };
+      }
+      map[l.accion].count++;
+    }
+    return Object.values(map).sort((a, b) => b.count - a.count);
+  }
+
   function formatearFecha(iso: string): string {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return iso;
@@ -179,6 +270,20 @@ function Logs() {
             <div className="logs-stat nivel-error">
               <span className="logs-stat-valor">{resumen.porNivel.error ?? 0}</span>
               <span className="logs-stat-label">Errores</span>
+            </div>
+          </div>
+        )}
+
+        {filtrados.length > 0 && (
+          <div className="logs-acciones-resumen">
+            <div className="logs-acciones-titulo">Actividad reciente</div>
+            <div className="logs-acciones-lista">
+              {resumenPorAccion(filtrados).slice(0, 6).map((item) => (
+                <div key={item.label} className={`logs-accion-chip nivel-${item.nivel}`}>
+                  <span className="logs-accion-chip-label">{item.label}</span>
+                  <span className="logs-accion-chip-count">{item.count}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -243,23 +348,30 @@ function Logs() {
                       <th>Fecha</th>
                       <th>Accion</th>
                       <th>Usuario</th>
-                      <th>Detalle</th>
+                      <th style={{ width: 50 }}></th>
                     </tr>
                   </thead>
                   <tbody>
                     {pag.itemsPagina.map((log) => (
-                      <tr key={log.id} className={`log-row log-row-${log.nivel}`}>
+                      <tr
+                        key={log.id}
+                        className={`log-row log-row-${log.nivel} log-row-clickable`}
+                        onClick={() => setLogSeleccionado(log)}
+                        title="Ver detalle"
+                      >
                         <td className="log-celda-icono">{iconoNivel(log.nivel)}</td>
                         <td className="log-celda-fecha">
                           <Clock size={11} /> {formatearFecha(log.fecha)}
                         </td>
                         <td>
-                          <span className={`log-accion log-accion-${log.nivel}`}>{log.accion}</span>
+                          <span className={`log-accion log-accion-${log.nivel}`}>{nombreAccion(log.accion)}</span>
                         </td>
                         <td className="log-celda-usuario">
                           {log.usuario ? (<><User size={11} /> {log.usuario}</>) : "—"}
                         </td>
-                        <td className="log-celda-detalle" title={log.detalle}>{log.detalle ?? "—"}</td>
+                        <td className="log-celda-ver">
+                          <Eye size={14} />
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -270,6 +382,82 @@ function Logs() {
           </>
         )}
       </div>
+
+      {/* Modal de detalle del log */}
+      {logSeleccionado && (
+        <div className="modal-overlay" onClick={() => setLogSeleccionado(null)}>
+          <div className="modal-content log-detalle-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="log-detalle-titulo">
+                {iconoNivel(logSeleccionado.nivel)}
+                <span>{nombreAccion(logSeleccionado.accion)}</span>
+              </div>
+              <button className="btn-cerrar-detalle" onClick={() => setLogSeleccionado(null)}>
+                <X size={16} />
+              </button>
+            </div>
+            <div className="log-detalle-body">
+              <div className="log-detalle-grid">
+                <div className="log-detalle-item">
+                  <label>Fecha</label>
+                  <span>{formatearFecha(logSeleccionado.fecha)}</span>
+                </div>
+                <div className="log-detalle-item">
+                  <label>Nivel</label>
+                  <span className={`log-accion log-accion-${logSeleccionado.nivel}`}>
+                    {logSeleccionado.nivel}
+                  </span>
+                </div>
+                <div className="log-detalle-item">
+                  <label>Usuario</label>
+                  <span>{logSeleccionado.usuario || "—"}</span>
+                </div>
+                <div className="log-detalle-item">
+                  <label>IP</label>
+                  <span>{logSeleccionado.ip || "—"}</span>
+                </div>
+              </div>
+
+              <div className="log-detalle-tabs">
+                <button
+                  className={tabDetalle === "resumen" ? "activo" : ""}
+                  onClick={() => setTabDetalle("resumen")}
+                >
+                  Resumen (simple)
+                </button>
+                <button
+                  className={tabDetalle === "tecnico" ? "activo" : ""}
+                  onClick={() => setTabDetalle("tecnico")}
+                >
+                  Tecnico
+                </button>
+              </div>
+
+              {tabDetalle === "resumen" ? (
+                <div className="log-detalle-seccion">
+                  <label>Que paso</label>
+                  <p className="log-detalle-resumen">
+                    {traducirDetalle(logSeleccionado.detalle, logSeleccionado.accion)}
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="log-detalle-seccion">
+                    <label>Detalle tecnico</label>
+                    <pre>{logSeleccionado.detalle || "Sin detalle"}</pre>
+                  </div>
+                  {logSeleccionado.extra && (
+                    <div className="log-detalle-seccion">
+                      <label>Informacion adicional (stack trace)</label>
+                      <pre>{logSeleccionado.extra}</pre>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <ConfirmModal
         visible={confirmLimpiar}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-import { Trash2, RotateCcw, Pencil } from "lucide-react";
+import { Trash2, RotateCcw, Pencil, Eye, X } from "lucide-react";
 import ConfirmModal from "../components/ConfirmModal";
 import Pagination from "../components/Pagination";
 import { usePagination } from "../hooks/usePagination";
@@ -43,6 +43,18 @@ function Documentacion() {
   const [editTitulo, setEditTitulo] = useState("");
   const [editDescripcion, setEditDescripcion] = useState("");
   const [editSeccion, setEditSeccion] = useState("");
+  const [vistaPrevia, setVistaPrevia] = useState<Documento | null>(null);
+  const [contenidoTxt, setContenidoTxt] = useState<string | null>(null);
+
+  // Cuando abre vista previa de un TXT, cargar el contenido
+  useEffect(() => {
+    if (!vistaPrevia) { setContenidoTxt(null); return; }
+    if (vistaPrevia.rutaArchivo.endsWith(".pdf")) { setContenidoTxt(null); return; }
+    fetch(`http://localhost:3001${vistaPrevia.rutaArchivo}`)
+      .then((r) => r.text())
+      .then((text) => setContenidoTxt(text))
+      .catch(() => setContenidoTxt("[No se pudo cargar el contenido del archivo]"));
+  }, [vistaPrevia]);
 
   async function cargar() {
     setLoading(true);
@@ -262,9 +274,9 @@ function Documentacion() {
                   <span>{seleccionado.nombreArchivo}</span>
                   <span>{(seleccionado.tamano / 1024).toFixed(1)} KB</span>
                 </div>
-                <a href={`http://localhost:3001${seleccionado.rutaArchivo}`} target="_blank" rel="noopener noreferrer" className="btn-descargar">
-                  Ver
-                </a>
+                <button className="btn-descargar" onClick={() => setVistaPrevia(seleccionado)}>
+                  <Eye size={14} /> Ver
+                </button>
               </div>
             ) : (
               <div className="split-empty">
@@ -302,6 +314,32 @@ function Documentacion() {
                 <button type="button" className="btn-cancelar" onClick={cerrarEdicion}>Cancelar</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {vistaPrevia && (
+        <div className="modal-overlay" onClick={() => setVistaPrevia(null)}>
+          <div className="modal-content vista-previa-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{vistaPrevia.titulo}</h2>
+              <button className="btn-cerrar-detalle" onClick={() => setVistaPrevia(null)}>
+                <X size={16} />
+              </button>
+            </div>
+            <div className="vista-previa-body">
+              {vistaPrevia.rutaArchivo.endsWith(".pdf") ? (
+                <iframe
+                  src={`http://localhost:3001${vistaPrevia.rutaArchivo}`}
+                  className="vista-previa-iframe"
+                  title={vistaPrevia.titulo}
+                />
+              ) : (
+                <pre className="vista-previa-texto">
+                  {contenidoTxt ?? "Cargando contenido..."}
+                </pre>
+              )}
+            </div>
           </div>
         </div>
       )}

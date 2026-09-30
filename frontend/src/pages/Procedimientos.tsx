@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-import { Pencil, Trash2, RotateCcw } from "lucide-react";
+import { Pencil, Trash2, RotateCcw, Printer, Search, Download } from "lucide-react";
 import ConfirmModal from "../components/ConfirmModal";
 import Pagination from "../components/Pagination";
 import { usePagination } from "../hooks/usePagination";
@@ -29,6 +29,7 @@ function Procedimientos() {
   const [procedimientos, setProcedimientos] = useState<Procedimiento[]>([]);
   const [seleccionado, setSeleccionado] = useState<Procedimiento | null>(null);
   const [moduloFiltro, setModuloFiltro] = useState("");
+  const [busqueda, setBusqueda] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -68,9 +69,21 @@ function Procedimientos() {
   }, [seleccionado]);
 
   const modulosUnicos = Array.from(new Set(procedimientos.map((p) => p.modulo)));
-  const filtrados = moduloFiltro ? procedimientos.filter((p) => p.modulo === moduloFiltro) : procedimientos;
+
+  const filtrados = procedimientos.filter((p) => {
+    const coincideModulo = moduloFiltro ? p.modulo === moduloFiltro : true;
+    if (!coincideModulo) return false;
+    if (!busqueda.trim()) return true;
+    const q = busqueda.toLowerCase();
+    return (
+      p.titulo?.toLowerCase().includes(q) ||
+      p.modulo?.toLowerCase().includes(q) ||
+      p.nivel?.toLowerCase().includes(q) ||
+      p.tiempo_estimado?.toLowerCase().includes(q)
+    );
+  });
   const ord = useSort(filtrados, "titulo");
-  const pag = usePagination(ord.itemsOrdenados, { porPagina: 8, reiniciarEn: `${moduloFiltro}|${ord.campo}|${ord.dir}` });
+  const pag = usePagination(ord.itemsOrdenados, { porPagina: 8, reiniciarEn: `${moduloFiltro}|${busqueda}|${ord.campo}|${ord.dir}` });
 
   function agregarPaso() {
     setNuevosPasos((prev) => [...prev, { orden: prev.length + 1, descripcion: "" }]);
@@ -167,6 +180,22 @@ function Procedimientos() {
     setMostrarFormulario(false); setEditandoId(null); setErrorGuardar("");
   }
 
+  function exportarCSV() {
+    const headers = ["ID", "Titulo", "Modulo", "Nivel", "Tiempo Estimado"];
+    const rows = filtrados.map((p) => [
+      p.id, `"${p.titulo.replace(/"/g, '""')}"`, p.modulo, p.nivel, p.tiempo_estimado
+    ]);
+    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `procedimientos-${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
   return (
     <>
     <div className="procedimientos-page">
@@ -214,12 +243,31 @@ function Procedimientos() {
             {!loading && usuario?.rol === "admin" && (
               <button className="btn-nuevo" onClick={() => setMostrarFormulario(true)}>+ Nuevo Procedimiento</button>
             )}
-            <div className="filtro-container">
-              <label>Filtrar por modulo:</label>
-              <select value={moduloFiltro} onChange={(e) => { setModuloFiltro(e.target.value); setSeleccionado(null); }}>
-                <option value="">Todos los modulos</option>
-                {modulosUnicos.map((m) => <option key={m} value={m}>{m}</option>)}
-              </select>
+            <div className="filtros-row">
+              <div className="filtro-container">
+                <label>Filtrar por modulo:</label>
+                <select value={moduloFiltro} onChange={(e) => { setModuloFiltro(e.target.value); setSeleccionado(null); }}>
+                  <option value="">Todos los modulos</option>
+                  {modulosUnicos.map((m) => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </div>
+              <div className="busqueda-container">
+                <Search size={14} />
+                <input
+                  type="text"
+                  className="busqueda-input"
+                  placeholder="Buscar por titulo, modulo, nivel..."
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                />
+              </div>
+              
+              <button className="btn-exportar" onClick={() => window.print()} title="Imprimir / Exportar PDF">
+                <Printer size={14} /> PDF
+              </button>
+              <button className="btn-exportar" onClick={exportarCSV} title="Exportar a CSV">
+                <Download size={14} /> Exportar
+              </button>
             </div>
             <OrdenSelector
               opciones={[

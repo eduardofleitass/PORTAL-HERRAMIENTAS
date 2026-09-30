@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-import { Pencil, Trash2, RotateCcw } from "lucide-react";
+import { Pencil, Trash2, RotateCcw, Printer, Search, Download } from "lucide-react";
 import ConfirmModal from "../components/ConfirmModal";
 import Pagination from "../components/Pagination";
 import { usePagination } from "../hooks/usePagination";
@@ -28,6 +28,7 @@ function Errores() {
   const [seleccionado, setSeleccionado] = useState<ErrorItem | null>(null);
   const [moduloFiltro, setModuloFiltro] = useState("");
   const [frecuenciaFiltro, setFrecuenciaFiltro] = useState("");
+  const [busqueda, setBusqueda] = useState("");
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -68,13 +69,40 @@ function Errores() {
 
   const modulosUnicos = Array.from(new Set(errores.map((e) => e.modulo_afectado)));
   const frecuenciasUnicas = Array.from(new Set(errores.map((e) => e.frecuencia)));
+
   const filtrados = errores.filter((e) => {
     const m = moduloFiltro ? e.modulo_afectado === moduloFiltro : true;
     const f = frecuenciaFiltro ? e.frecuencia === frecuenciaFiltro : true;
-    return m && f;
+    if (!m || !f) return false;
+    if (!busqueda.trim()) return true;
+    const q = busqueda.toLowerCase();
+    return (
+      e.codigo?.toLowerCase().includes(q) ||
+      e.titulo?.toLowerCase().includes(q) ||
+      e.descripcion?.toLowerCase().includes(q) ||
+      e.modulo_afectado?.toLowerCase().includes(q) ||
+      e.tags?.some((tag) => tag.toLowerCase().includes(q))
+    );
   });
   const ord = useSort(filtrados, "codigo");
-  const pag = usePagination(ord.itemsOrdenados, { porPagina: 8, reiniciarEn: `${moduloFiltro}|${frecuenciaFiltro}|${ord.campo}|${ord.dir}` });
+  const pag = usePagination(ord.itemsOrdenados, { porPagina: 8, reiniciarEn: `${moduloFiltro}|${frecuenciaFiltro}|${busqueda}|${ord.campo}|${ord.dir}` });
+
+  function exportarCSV() {
+    const headers = ["ID", "Codigo", "Titulo", "Modulo", "Frecuencia", "Tags"];
+    const rows = filtrados.map((e) => [
+      e.id, `"${e.codigo}"`, `"${e.titulo}"`,
+      e.modulo_afectado, e.frecuencia, `"${(e.tags || []).join(", ")}"`
+    ]);
+    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `errores-${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
 
   function cerrarFormulario() {
     setNuevoCodigo(""); setNuevoTitulo(""); setNuevaDescripcion("");
@@ -222,6 +250,23 @@ function Errores() {
                   {frecuenciasUnicas.map((f) => <option key={f} value={f}>{f}</option>)}
                 </select>
               </div>
+              <div className="busqueda-container">
+                <Search size={14} />
+                <input
+                  type="text"
+                  className="busqueda-input"
+                  placeholder="Buscar por codigo, titulo, tags..."
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                />
+              </div>
+              
+              <button className="btn-exportar" onClick={() => window.print()} title="Imprimir / Exportar PDF">
+                <Printer size={14} /> PDF
+              </button>
+              <button className="btn-exportar" onClick={exportarCSV} title="Exportar a CSV">
+                <Download size={14} /> Exportar
+              </button>
             </div>
             <OrdenSelector
               opciones={[

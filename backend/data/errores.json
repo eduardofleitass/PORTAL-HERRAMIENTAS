@@ -30,21 +30,5 @@
       "op_massive",
       "asesor"
     ]
-  },
-  {
-    "id": 5,
-    "codigo": "TICK-005",
-    "titulo": "El boton 'Procesar' no aparece en ficha clinica",
-    "descripcion": "En la ficha clinica de un paciente, el boton para procesar no se muestra.",
-    "causa": "Verificar que el usuario tenga el permiso correspondiente en la tabla permissions y que el modulo de ficha clinica este activo en su rol.",
-    "solucion": "Revisar permissions del usuario. Si el permiso existe y esta asignado, verificar que no haya una regla de negocio que oculte el boton (ej: paciente sin contrato activo).",
-    "modulo_afectado": "Ficha Clinica",
-    "frecuencia": "baja",
-    "tags": [
-      "ficha clinica",
-      "procesar",
-      "permisos",
-      "boton"
-    ]
   }
 ]

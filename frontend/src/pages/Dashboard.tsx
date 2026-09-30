@@ -17,13 +17,6 @@ interface MetricasData {
   procedimientosPorModulo: Record<string, number>;
   procedimientosPorNivel: Record<string, number>;
   erroresPorModulo: Record<string, number>;
-  erroresPorFrecuencia: Record<string, number>;
-  documentosPorSeccion: Record<string, number>;
-  tagsTop: { tag: string; count: number }[];
-  ultimosAgregados: {
-    procedimientos: { id: number; titulo: string; modulo: string }[];
-    errores: { id: number; codigo: string; titulo: string; modulo: string }[];
-  };
 }
 
 function Dashboard() {
@@ -36,11 +29,11 @@ function Dashboard() {
   useEffect(() => {
     async function cargar() {
       try {
-        const [modulosResp, metricasResp] = await Promise.all([
+        const [_, metricasResp] = await Promise.all([
           fetch("http://localhost:3001/configuracion/modulos-portal"),
           fetch("http://localhost:3001/metricas"),
         ]);
-        await modulosResp.json();
+        await _.json();
         const metricasData = await metricasResp.json();
         setMetricas(metricasData);
       } catch {
@@ -101,7 +94,7 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* Donuts de proporcion */}
+          {/* Charts grid */}
           <div className="metricas-grid">
             <div className="metricas-panel">
               <h3><ClipboardList size={16} /> Procedimientos por modulo</h3>

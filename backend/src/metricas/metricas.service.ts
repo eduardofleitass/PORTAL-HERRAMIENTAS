@@ -40,30 +40,6 @@ export class MetricasService {
       modsErrores[e.modulo_afectado] = (modsErrores[e.modulo_afectado] || 0) + 1;
     });
 
-    // Errores por frecuencia
-    const frecuenciasErrores: Record<string, number> = {};
-    errores.forEach((e: any) => {
-      frecuenciasErrores[e.frecuencia] = (frecuenciasErrores[e.frecuencia] || 0) + 1;
-    });
-
-    // Documentos por seccion
-    const seccionesDocs: Record<string, number> = {};
-    documentacion.forEach((d: any) => {
-      seccionesDocs[d.seccion] = (seccionesDocs[d.seccion] || 0) + 1;
-    });
-
-    // Tags mas usados
-    const tagsCount: Record<string, number> = {};
-    errores.forEach((e: any) => {
-      (e.tags || []).forEach((tag: string) => {
-        tagsCount[tag] = (tagsCount[tag] || 0) + 1;
-      });
-    });
-    const tagsTop = Object.entries(tagsCount)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 8)
-      .map(([tag, count]) => ({ tag, count }));
-
     return {
       totales: {
         procedimientos: procedimientos.length,
@@ -73,22 +49,6 @@ export class MetricasService {
       procedimientosPorModulo: modsProcedimientos,
       procedimientosPorNivel: nivelesProcedimientos,
       erroresPorModulo: modsErrores,
-      erroresPorFrecuencia: frecuenciasErrores,
-      documentosPorSeccion: seccionesDocs,
-      tagsTop,
-      ultimosAgregados: {
-        procedimientos: procedimientos.slice(-3).reverse().map((p: any) => ({
-          id: p.id,
-          titulo: p.titulo,
-          modulo: p.modulo,
-        })),
-        errores: errores.slice(-3).reverse().map((e: any) => ({
-          id: e.id,
-          codigo: e.codigo,
-          titulo: e.titulo,
-          modulo: e.modulo_afectado,
-        })),
-      },
     };
   }
 }

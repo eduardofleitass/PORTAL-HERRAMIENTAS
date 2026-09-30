@@ -35,8 +35,9 @@ export function getDataPath(filename: string): string {
     return path.join(normalized, filename);
   }
 
-  // Fallback para desarrollo
+  // Fallback para desarrollo: el directorio data esta al lado de src/
+  // (desde backend/src/  ->  backend/data/)
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
-  return path.join(__dirname, '..', '..', 'data', filename);
+  return path.join(__dirname, '..', 'data', filename);
 }

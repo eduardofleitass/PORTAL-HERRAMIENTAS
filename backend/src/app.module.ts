@@ -11,6 +11,7 @@ import { UsuariosModule } from './usuarios/usuarios.module.js';
 import { MetricasModule } from './metricas/metricas.module.js';
 import { LogsModule } from './logs/logs.module.js';
 import { LogsService } from './logs/logs.service.js';
+import { LogsInterceptor } from './logs/logs.interceptor.js';
 
 @Module({
   imports: [
@@ -24,6 +25,13 @@ import { LogsService } from './logs/logs.service.js';
     LogsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useFactory: (logsService: LogsService) => new LogsInterceptor(logsService),
+      inject: [LogsService],
+    },
+  ],
 })
 export class AppModule {}

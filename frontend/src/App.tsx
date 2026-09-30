@@ -1,4 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from "react";
+import { ThemeProvider } from "./context/ThemeContext";
 import { Route, Routes, HashRouter, useLocation } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
@@ -15,6 +16,7 @@ const Errores = lazy(() => import("./pages/Errores"));
 const Documentacion = lazy(() => import("./pages/Documentacion"));
 const Usuarios = lazy(() => import("./pages/Usuarios"));
 const Logs = lazy(() => import("./pages/Logs"));
+const Perfil = lazy(() => import("./pages/Perfil"));
 
 /** Pantalla mientras se descarga el chunk de la pagina */
 function CargandoPagina() {
@@ -28,7 +30,8 @@ function CargandoPagina() {
 
 function App() {
   return (
-    <HashRouter>
+    <ThemeProvider>
+      <HashRouter>
       <SessionInterceptor />
       <Suspense fallback={<CargandoPagina />}>
         <Routes>
@@ -36,7 +39,8 @@ function App() {
           <Route path="/*" element={<AppLayout />} />
         </Routes>
       </Suspense>
-    </HashRouter>
+      </HashRouter>
+    </ThemeProvider>
   );
 }
 
@@ -84,6 +88,7 @@ function AppLayout() {
               <Route path="/errores" element={<ProtectedRoute><Errores /></ProtectedRoute>} />
               <Route path="/documentacion" element={<ProtectedRoute><Documentacion /></ProtectedRoute>} />
               <Route path="/logs" element={<ProtectedRoute><Logs /></ProtectedRoute>} />
+              <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
               <Route path="/usuarios" element={<AdminRoute><Usuarios /></AdminRoute>} />
               <Route path="*" element={<ProtectedRoute><NoEncontrado /></ProtectedRoute>} />
             </Routes>

@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useToast } from "../context/ToastContext";
-import { useState, useRef } from "react";
+import { useTheme } from "../context/ThemeContext";
+import { NotificationBell } from "./NotificationBell";
 import {
   LayoutDashboard,
   ClipboardList,
@@ -9,11 +9,12 @@ import {
   BookOpen,
   LogOut,
   Users,
-  Camera,
   PanelLeftOpen,
   ChevronLeft,
   X,
-  Activity
+  Activity,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 function avatarUrl(avatar?: string): string {
@@ -30,52 +31,14 @@ interface SidebarProps {
 }
 
 function Sidebar({ visible, onToggle, mobileOpen, onMobileClose, onSearchOpen }: SidebarProps) {
-  const { usuario, logout, token, updateUser } = useAuth();
-  const toast = useToast();
+  const { usuario, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const [mostrarAvatarModal, setMostrarAvatarModal] = useState(false);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [subiendo, setSubiendo] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   function cerrarSesion() {
     logout();
     navigate("/login");
-  }
-
-  function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setAvatarFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => setAvatarPreview(reader.result as string);
-    reader.readAsDataURL(file);
-  }
-
-  async function guardarAvatar() {
-    if (!avatarFile || !usuario || !token) return;
-    setSubiendo(true);
-    try {
-      const fd = new FormData();
-      fd.append("avatar", avatarFile);
-      const res = await fetch("http://localhost:3001/auth/me/avatar", {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-        body: fd,
-      });
-      if (!res.ok) throw new Error("Error al subir avatar");
-      const data = await res.json();
-      updateUser({ ...usuario, avatar: data.avatar });
-      setMostrarAvatarModal(false);
-      setAvatarPreview(null);
-      setAvatarFile(null);
-    } catch {
-      toast.addToast("Error al subir la foto", "error");
-    } finally {
-      setSubiendo(false);
-    }
   }
 
   const links = [
@@ -83,10 +46,10 @@ function Sidebar({ visible, onToggle, mobileOpen, onMobileClose, onSearchOpen }:
     { path: "/procedimientos", label: "Procedimientos", icon: ClipboardList },
     { path: "/errores", label: "Errores", icon: Search },
     { path: "/documentacion", label: "Documentacion", icon: BookOpen },
-    { path: "/logs", label: "Actividad", icon: Activity },
   ];
 
   const adminLinks = [
+    { path: "/logs", label: "Actividad", icon: Activity },
     { path: "/usuarios", label: "Usuarios", icon: Users },
   ];
 
@@ -105,6 +68,12 @@ function Sidebar({ visible, onToggle, mobileOpen, onMobileClose, onSearchOpen }:
           </button>
         </div>
 
+        <div className="sidebar-top-actions" style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+          <NotificationBell />
+          <button className="sidebar-theme-btn" onClick={toggleTheme} title={theme === "dark" ? "Modo claro" : "Modo oscuro"}>
+            {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
+        </div>
         <div className="sidebar-search-bar" onClick={() => { onSearchOpen(); onMobileClose(); }}>
           <Search size={14} />
           <span className="sidebar-search-text">Buscar...</span>
@@ -156,22 +125,19 @@ function Sidebar({ visible, onToggle, mobileOpen, onMobileClose, onSearchOpen }:
         <div className="sidebar-bottom">
           {usuario && (
             <>
-              <div className="sidebar-user" onClick={() => setMostrarAvatarModal(true)} title="Cambiar foto de perfil">
+              <Link to="/perfil" className="sidebar-user" title="Ver perfil" onClick={() => onMobileClose()}>
                 <div className="sidebar-avatar">
                   {usuario.avatar ? (
                     <img src={avatarUrl(usuario.avatar)} alt={usuario.nombre} className="sidebar-avatar-img" />
                   ) : (
                     usuario.nombre?.charAt(0)?.toUpperCase() || "U"
                   )}
-                  <div className="sidebar-avatar-badge">
-                    <Camera size={10} />
-                  </div>
                 </div>
                 <div className="sidebar-user-info">
                   <span className="sidebar-user-name">{usuario.nombre}</span>
                   <span className="sidebar-user-role">{usuario.rol}</span>
                 </div>
-              </div>
+              </Link>
               <button onClick={cerrarSesion} className="sidebar-logout">
                 <LogOut size={16} />
                 <span>Cerrar Sesion</span>
@@ -181,60 +147,9 @@ function Sidebar({ visible, onToggle, mobileOpen, onMobileClose, onSearchOpen }:
         </div>
       </aside>
 
-      {/* Pestaña para mostrar sidebar cuando esta oculto */}
       {!visible && !mobileOpen && (
         <div className="sidebar-tab" onClick={onToggle} title="Mostrar sidebar">
           <PanelLeftOpen size={14} />
-        </div>
-      )}
-
-      {/* Modal cambiar avatar */}
-      {mostrarAvatarModal && (
-        <div className="modal-overlay" onClick={() => setMostrarAvatarModal(false)}>
-          <div className="modal-content avatar-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Foto de perfil</h2>
-              <button className="btn-cerrar-detalle" onClick={() => setMostrarAvatarModal(false)}>
-                <span>✕</span>
-              </button>
-            </div>
-            <div className="avatar-upload">
-              <div className="avatar-preview-wrapper avatar-big" onClick={() => fileInputRef.current?.click()}>
-                {avatarPreview ? (
-                  <img src={avatarPreview} alt="Preview" className="avatar-preview-img" />
-                ) : usuario?.avatar ? (
-                  <img src={avatarUrl(usuario.avatar)} alt={usuario.nombre} className="avatar-preview-img" />
-                ) : (
-                  <div className="avatar-preview-placeholder">
-                    <Camera size={28} />
-                  </div>
-                )}
-                <button
-                  type="button"
-                  className="avatar-upload-btn"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Camera size={14} />
-                </button>
-              </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={onFileChange}
-                hidden
-              />
-              <label className="avatar-label">Toca para cambiar tu foto</label>
-            </div>
-            <div className="form-actions">
-              <button type="button" className="btn-secundario" onClick={() => setMostrarAvatarModal(false)}>
-                Cancelar
-              </button>
-              <button type="button" className="btn-primario" onClick={guardarAvatar} disabled={subiendo || !avatarFile}>
-                {subiendo ? "Subiendo..." : "Guardar foto"}
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </>
