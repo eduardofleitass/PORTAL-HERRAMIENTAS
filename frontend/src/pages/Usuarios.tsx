@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
+import type { Permisos } from "../context/AuthContext";
 import { Plus, Pencil, Trash2, Shield, User, Camera, RotateCcw } from "lucide-react";
 import ConfirmModal from "../components/ConfirmModal";
 
@@ -10,6 +11,7 @@ interface Usuario {
   rol: "admin" | "usuario";
   avatar?: string;
   activo?: boolean;
+  permisos?: Permisos;
 }
 
 interface FormData {
@@ -18,6 +20,7 @@ interface FormData {
   nombre: string;
   rol: "admin" | "usuario";
   activo: boolean;
+  permisos: Permisos;
 }
 
 function avatarUrl(avatar?: string): string {
@@ -38,6 +41,10 @@ function Usuarios() {
     nombre: "",
     rol: "usuario",
     activo: true,
+    permisos: {
+      modulos: { dashboard: true, procedimientos: true, errores: true, documentacion: true, actividad: false, usuarios: false },
+      acciones: { crear: false, editar: false, eliminar: false, exportarPDF: false, exportarCSV: false }
+    }
   });
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -68,7 +75,13 @@ function Usuarios() {
 
   function abrirCrear() {
     setEditando(null);
-    setForm({ username: "", password: "", nombre: "", rol: "usuario", activo: true });
+    setForm({
+      username: "", password: "", nombre: "", rol: "usuario", activo: true,
+      permisos: {
+        modulos: { dashboard: true, procedimientos: true, errores: true, documentacion: true, actividad: false, usuarios: false },
+        acciones: { crear: false, editar: false, eliminar: false, exportarPDF: false, exportarCSV: false }
+      }
+    });
     setAvatarPreview(null);
     setAvatarFile(null);
     setMostrarForm(true);
@@ -76,7 +89,14 @@ function Usuarios() {
 
   function abrirEditar(u: Usuario) {
     setEditando(u);
-    setForm({ username: u.username, password: "", nombre: u.nombre, rol: u.rol, activo: u.activo !== false });
+    const p: Permisos = u.permisos ?? {
+      modulos: { dashboard: true, procedimientos: true, errores: true, documentacion: true, actividad: u.rol === "admin", usuarios: u.rol === "admin" },
+      acciones: { crear: u.rol === "admin", editar: u.rol === "admin", eliminar: u.rol === "admin", exportarPDF: u.rol === "admin", exportarCSV: u.rol === "admin" }
+    };
+    setForm({
+      username: u.username, password: "", nombre: u.nombre, rol: u.rol, activo: u.activo !== false,
+      permisos: p
+    });
     setAvatarPreview(u.avatar ? avatarUrl(u.avatar) : null);
     setAvatarFile(null);
     setMostrarForm(true);
@@ -356,6 +376,54 @@ function Usuarios() {
                   <option value="admin">Administrador</option>
                 </select>
               </div>
+
+              {/* Permisos */}
+              <div className="form-group">
+                <label>Permisos</label>
+                <div className="permisos-grid">
+                  <div className="permisos-seccion">
+                    <span className="permisos-titulo">Modulos</span>
+                    {Object.entries(form.permisos.modulos).map(([modulo, activo]) => (
+                      <label key={modulo} className="permiso-check">
+                        <input
+                          type="checkbox"
+                          checked={activo}
+                          onChange={(e) =>
+                            setForm({
+                              ...form,
+                              permisos: {
+                                ...form.permisos,
+                                modulos: { ...form.permisos.modulos, [modulo]: e.target.checked }
+                              }
+                            })}
+                        />
+                        <span>{modulo.charAt(0).toUpperCase() + modulo.slice(1)}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <div className="permisos-seccion">
+                    <span className="permisos-titulo">Acciones</span>
+                    {Object.entries(form.permisos.acciones).map(([accion, activo]) => (
+                      <label key={accion} className="permiso-check">
+                        <input
+                          type="checkbox"
+                          checked={activo}
+                          onChange={(e) =>
+                            setForm({
+                              ...form,
+                              permisos: {
+                                ...form.permisos,
+                                acciones: { ...form.permisos.acciones, [accion]: e.target.checked }
+                              }
+                            })}
+                        />
+                        <span>{accion === "exportarPDF" ? "Exportar PDF" : accion === "exportarCSV" ? "Exportar CSV" : accion.charAt(0).toUpperCase() + accion.slice(1)}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               <div className="form-actions">
                 <button type="button" className="btn-secundario" onClick={() => setMostrarForm(false)}>
                   Cancelar

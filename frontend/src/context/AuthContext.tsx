@@ -1,11 +1,30 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 
-interface Usuario {
+export interface Permisos {
+  modulos: {
+    dashboard: boolean;
+    procedimientos: boolean;
+    errores: boolean;
+    documentacion: boolean;
+    actividad: boolean;
+    usuarios: boolean;
+  };
+  acciones: {
+    crear: boolean;
+    editar: boolean;
+    eliminar: boolean;
+    exportarPDF: boolean;
+    exportarCSV: boolean;
+  };
+}
+
+export interface Usuario {
   id: number;
   username: string;
   nombre: string;
   rol: string;
   avatar?: string;
+  permisos?: Permisos;
 }
 
 interface AuthContextType {
@@ -73,4 +92,20 @@ export function useAuth() {
     throw new Error("useAuth debe usarse dentro de un AuthProvider");
   }
   return context;
+}
+
+/** Helper para verificar permisos facilmente */
+export function usePermisos(): Permisos | undefined {
+  const { usuario } = useAuth();
+  return usuario?.permisos;
+}
+
+export function puedeVerModulo(permisos: Permisos | undefined, modulo: keyof Permisos["modulos"]): boolean {
+  if (!permisos) return false;
+  return permisos.modulos[modulo] === true;
+}
+
+export function puedeRealizarAccion(permisos: Permisos | undefined, accion: keyof Permisos["acciones"]): boolean {
+  if (!permisos) return false;
+  return permisos.acciones[accion] === true;
 }

@@ -55,7 +55,7 @@ function Dashboard() {
         <h1>Dashboard</h1>
         {usuario && (
           <>
-            <span className="rol-badge">{usuario.nombre}</span>
+            <span className="usuario-badge">{usuario.nombre}</span>
             <p>Resumen del portal de herramientas</p>
           </>
         )}

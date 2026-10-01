@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth, usePermisos, puedeRealizarAccion } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { useNotificaciones } from "../context/NotificationContext";
 import { Pencil, Trash2, RotateCcw, Printer, Search, Download } from "lucide-react";
 import ConfirmModal from "../components/ConfirmModal";
 import Pagination from "../components/Pagination";
@@ -25,6 +26,8 @@ interface Procedimiento {
 function Procedimientos() {
   const { usuario } = useAuth();
   const toast = useToast();
+  const permisos = usePermisos();
+  const { agregar: notificar } = useNotificaciones();
 
   const [procedimientos, setProcedimientos] = useState<Procedimiento[]>([]);
   const [seleccionado, setSeleccionado] = useState<Procedimiento | null>(null);
@@ -117,6 +120,7 @@ function Procedimientos() {
       setProcedimientos((prev) => [...prev, creado]);
       cerrarFormulario();
       toast.addToast("Procedimiento creado correctamente", "success");
+      notificar("Procedimiento creado", `Se creo el procedimiento "${nuevoTitulo}"`, "success");
     } catch { setErrorGuardar("Error de conexion"); }
     finally { setGuardando(false); }
   }
@@ -155,6 +159,7 @@ function Procedimientos() {
       setProcedimientos((prev) => prev.map((p) => p.id === editandoId ? actualizado : p));
       cerrarFormulario();
       toast.addToast("Cambios guardados", "success");
+      notificar("Procedimiento editado", `Se edito el procedimiento "${nuevoTitulo}"`, "info");
     } catch { setErrorGuardar("Error de conexion"); }
     finally { setGuardando(false); }
   }
@@ -171,6 +176,7 @@ function Procedimientos() {
       setProcedimientos((prev) => prev.filter((p) => p.id !== id));
       setSeleccionado(null);
       toast.addToast("Procedimiento eliminado", "success");
+      notificar("Procedimiento eliminado", "Se elimino un procedimiento del sistema", "warning");
     } catch { toast.addToast("Error de conexion con el servidor", "error"); }
   }
 
@@ -240,7 +246,7 @@ function Procedimientos() {
       ) : (
         <div className="split-layout">
           <div className="split-list">
-            {!loading && usuario?.rol === "admin" && (
+            {!loading && puedeRealizarAccion(permisos, "crear") && (
               <button className="btn-nuevo" onClick={() => setMostrarFormulario(true)}>+ Nuevo Procedimiento</button>
             )}
             <div className="filtros-row">
@@ -262,12 +268,16 @@ function Procedimientos() {
                 />
               </div>
               
-              <button className="btn-exportar" onClick={() => window.print()} title="Imprimir / Exportar PDF">
-                <Printer size={14} /> PDF
-              </button>
-              <button className="btn-exportar" onClick={exportarCSV} title="Exportar a CSV">
-                <Download size={14} /> Exportar
-              </button>
+              {puedeRealizarAccion(permisos, "exportarPDF") && (
+                <button className="btn-exportar" onClick={() => window.print()} title="Imprimir / Exportar PDF">
+                  <Printer size={14} /> PDF
+                </button>
+              )}
+              {puedeRealizarAccion(permisos, "exportarCSV") && (
+                <button className="btn-exportar" onClick={exportarCSV} title="Exportar a CSV">
+                  <Download size={14} /> Exportar
+                </button>
+              )}
             </div>
             <OrdenSelector
               opciones={[
@@ -306,12 +316,12 @@ function Procedimientos() {
                     </div>
                     {usuario?.rol === "admin" && (
                       <div className="item-acciones" onClick={(e) => e.stopPropagation()}>
-                        <button className="btn-icon btn-icon-editar" title="Editar" onClick={() => iniciarEdicion(proc)}>
+                        {puedeRealizarAccion(permisos, "editar") && (<button className="btn-icon btn-icon-editar" title="Editar" onClick={() => iniciarEdicion(proc)}>
                           <Pencil size={16} />
-                        </button>
-                        <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={() => setConfirmEliminar(proc.id)}>
+                        </button>)}
+                        {puedeRealizarAccion(permisos, "eliminar") && (<button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={() => setConfirmEliminar(proc.id)}>
                           <Trash2 size={16} />
-                        </button>
+                        </button>)}
                       </div>
                     )}
                   </div>

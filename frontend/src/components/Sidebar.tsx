@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth, usePermisos, puedeVerModulo } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { NotificationBell } from "./NotificationBell";
 import {
@@ -32,6 +32,7 @@ interface SidebarProps {
 
 function Sidebar({ visible, onToggle, mobileOpen, onMobileClose, onSearchOpen }: SidebarProps) {
   const { usuario, logout } = useAuth();
+  const permisos = usePermisos();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -42,15 +43,15 @@ function Sidebar({ visible, onToggle, mobileOpen, onMobileClose, onSearchOpen }:
   }
 
   const links = [
-    { path: "/", label: "Dashboard", icon: LayoutDashboard },
-    { path: "/procedimientos", label: "Procedimientos", icon: ClipboardList },
-    { path: "/errores", label: "Errores", icon: Search },
-    { path: "/documentacion", label: "Documentacion", icon: BookOpen },
+    { path: "/", label: "Dashboard", icon: LayoutDashboard, modulo: "dashboard" as const },
+    { path: "/procedimientos", label: "Procedimientos", icon: ClipboardList, modulo: "procedimientos" as const },
+    { path: "/errores", label: "Errores", icon: Search, modulo: "errores" as const },
+    { path: "/documentacion", label: "Documentacion", icon: BookOpen, modulo: "documentacion" as const },
   ];
 
   const adminLinks = [
-    { path: "/logs", label: "Actividad", icon: Activity },
-    { path: "/usuarios", label: "Usuarios", icon: Users },
+    { path: "/logs", label: "Actividad", icon: Activity, modulo: "actividad" as const },
+    { path: "/usuarios", label: "Usuarios", icon: Users, modulo: "usuarios" as const },
   ];
 
   return (
@@ -81,7 +82,7 @@ function Sidebar({ visible, onToggle, mobileOpen, onMobileClose, onSearchOpen }:
         </div>
 
         <nav className="sidebar-nav">
-          {links.map((link) => {
+          {links.filter((l) => puedeVerModulo(permisos, l.modulo)).map((link) => {
             const Icon = link.icon;
             const isActive = location.pathname === link.path;
             return (
@@ -98,10 +99,10 @@ function Sidebar({ visible, onToggle, mobileOpen, onMobileClose, onSearchOpen }:
               </Link>
             );
           })}
-          {usuario?.rol === "admin" && (
+          {adminLinks.filter((l) => puedeVerModulo(permisos, l.modulo)).length > 0 && (
             <>
               <div className="sidebar-separator" />
-              {adminLinks.map((link) => {
+              {adminLinks.filter((l) => puedeVerModulo(permisos, l.modulo)).map((link) => {
                 const Icon = link.icon;
                 const isActive = location.pathname === link.path;
                 return (

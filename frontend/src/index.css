@@ -436,6 +436,7 @@ body {
   padding: 0.5rem;
   border-radius: var(--radius-md);
   transition: var(--transition);
+  text-decoration: none;
 }
 
 .sidebar-user:hover {
@@ -497,12 +498,14 @@ body {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-primary);
+  text-decoration: none;
 }
 
 .sidebar-user-role {
   font-size: 0.75rem;
   color: var(--text-muted);
   text-transform: capitalize;
+  text-decoration: none;
 }
 
 .sidebar-logout {
@@ -4192,3 +4195,48 @@ tr.usuario-inactivo td {
 
 .perfil-divider::before { margin-right: 0.75rem; }
 .perfil-divider::after { margin-left: 0.75rem; }
+
+/* ============================================
+   PERMISOS USUARIO
+   ============================================ */
+.permisos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.permisos-seccion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.permisos-titulo {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.permiso-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.permiso-check input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+

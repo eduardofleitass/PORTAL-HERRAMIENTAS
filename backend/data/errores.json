@@ -30,5 +30,31 @@
       "op_massive",
       "asesor"
     ]
+  },
+  {
+    "id": 4,
+    "codigo": "prueba",
+    "titulo": "prueba",
+    "descripcion": "prueba",
+    "causa": "prueba",
+    "solucion": "prueba",
+    "modulo_afectado": "prueba",
+    "frecuencia": "alta",
+    "tags": [
+      "pruebas"
+    ]
+  },
+  {
+    "id": 5,
+    "codigo": "ERRO",
+    "titulo": "ERROR",
+    "descripcion": "ERROR",
+    "causa": "ERROR",
+    "solucion": "ERROR",
+    "modulo_afectado": "ERROR",
+    "frecuencia": "alta",
+    "tags": [
+      "ERROR"
+    ]
   }
 ]

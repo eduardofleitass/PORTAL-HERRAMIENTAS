@@ -1,58 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Bell, X, AlertCircle, CheckCircle, Info } from "lucide-react";
-
-interface Notificacion {
-  id: number;
-  tipo: "error" | "warning" | "success" | "info";
-  titulo: string;
-  mensaje: string;
-  fecha: string;
-  leida: boolean;
-}
-
-export function useNotificaciones() {
-  const [notifs, setNotifs] = useState<Notificacion[]>(() => {
-    try {
-      return JSON.parse(localStorage.getItem("portal-notificaciones") || "[]");
-    } catch { return []; }
-  });
-
-  useEffect(() => {
-    localStorage.setItem("portal-notificaciones", JSON.stringify(notifs));
-  }, [notifs]);
-
-  function agregar(titulo: string, mensaje: string, tipo: Notificacion["tipo"] = "info") {
-    const nueva: Notificacion = {
-      id: Date.now(),
-      tipo,
-      titulo,
-      mensaje,
-      fecha: new Date().toISOString(),
-      leida: false,
-    };
-    setNotifs((prev) => [nueva, ...prev].slice(0, 50));
-  }
-
-  function marcarLeida(id: number) {
-    setNotifs((prev) => prev.map((n) => n.id === id ? { ...n, leida: true } : n));
-  }
-
-  function marcarTodasLeidas() {
-    setNotifs((prev) => prev.map((n) => ({ ...n, leida: true })));
-  }
-
-  function eliminar(id: number) {
-    setNotifs((prev) => prev.filter((n) => n.id !== id));
-  }
-
-  function limpiar() {
-    setNotifs([]);
-  }
-
-  const noLeidas = notifs.filter((n) => !n.leida).length;
-
-  return { notifs, noLeidas, agregar, marcarLeida, marcarTodasLeidas, eliminar, limpiar };
-}
+import { useNotificaciones } from "../context/NotificationContext";
 
 export function NotificationBell() {
   const { notifs, noLeidas, marcarLeida, marcarTodasLeidas, eliminar } = useNotificaciones();

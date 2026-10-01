@@ -1,5 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from "react";
 import { ThemeProvider } from "./context/ThemeContext";
+import { NotificationProvider } from "./context/NotificationContext";
 import { Route, Routes, HashRouter, useLocation } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
@@ -31,15 +32,17 @@ function CargandoPagina() {
 function App() {
   return (
     <ThemeProvider>
-      <HashRouter>
-      <SessionInterceptor />
-      <Suspense fallback={<CargandoPagina />}>
-        <Routes>
-          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-          <Route path="/*" element={<AppLayout />} />
-        </Routes>
-      </Suspense>
-      </HashRouter>
+      <NotificationProvider>
+        <HashRouter>
+        <SessionInterceptor />
+        <Suspense fallback={<CargandoPagina />}>
+          <Routes>
+            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path="/*" element={<AppLayout />} />
+          </Routes>
+        </Suspense>
+        </HashRouter>
+      </NotificationProvider>
     </ThemeProvider>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth, usePermisos, puedeRealizarAccion } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { useNotificaciones } from "../context/NotificationContext";
 import { Pencil, Trash2, RotateCcw, Printer, Search, Download } from "lucide-react";
 import ConfirmModal from "../components/ConfirmModal";
 import Pagination from "../components/Pagination";
@@ -23,6 +24,8 @@ interface ErrorItem {
 function Errores() {
   const { usuario } = useAuth();
   const toast = useToast();
+  const permisos = usePermisos();
+  const { agregar: notificar } = useNotificaciones();
 
   const [errores, setErrores] = useState<ErrorItem[]>([]);
   const [seleccionado, setSeleccionado] = useState<ErrorItem | null>(null);
@@ -141,7 +144,8 @@ function Errores() {
       const creado = await respuesta.json();
       setErrores((prev) => [...prev, creado]);
       cerrarFormulario();
-      toast.addToast("Error registrado correctamente", "success");
+      toast.addToast("Error creado correctamente", "success");
+      notificar("Error creado", `Se registro el error #${nuevoCodigo}`, "error");
     } catch { setErrorGuardar("Error de conexion"); }
     finally { setGuardando(false); }
   }
@@ -169,6 +173,7 @@ function Errores() {
       setErrores((prev) => prev.map((e) => e.id === editandoId ? actualizado : e));
       cerrarFormulario();
       toast.addToast("Cambios guardados", "success");
+      notificar("Error editado", `Se edito el error #${nuevoCodigo}`, "info");
     } catch { setErrorGuardar("Error de conexion"); }
     finally { setGuardando(false); }
   }
@@ -184,6 +189,7 @@ function Errores() {
       setErrores((prev) => prev.filter((e) => e.id !== id));
       setSeleccionado(null);
       toast.addToast("Error eliminado", "success");
+      notificar("Error eliminado", "Se elimino un error del sistema", "warning");
     } catch { toast.addToast("Error de conexion con el servidor", "error"); }
   }
 
@@ -232,7 +238,7 @@ function Errores() {
       ) : (
         <div className="split-layout">
           <div className="split-list">
-            {!loading && usuario?.rol === "admin" && (
+            {!loading && puedeRealizarAccion(permisos, "crear") && (
               <button className="btn-nuevo" onClick={() => setMostrarFormulario(true)}>+ Nuevo Error</button>
             )}
             <div className="filtros-row">
@@ -261,12 +267,12 @@ function Errores() {
                 />
               </div>
               
-              <button className="btn-exportar" onClick={() => window.print()} title="Imprimir / Exportar PDF">
+              {puedeRealizarAccion(permisos, "exportarPDF") && <button className="btn-exportar" onClick={() => window.print()} title="Imprimir / Exportar PDF">
                 <Printer size={14} /> PDF
-              </button>
-              <button className="btn-exportar" onClick={exportarCSV} title="Exportar a CSV">
+              </button>}
+              {puedeRealizarAccion(permisos, "exportarCSV") && <button className="btn-exportar" onClick={exportarCSV} title="Exportar a CSV">
                 <Download size={14} /> Exportar
-              </button>
+              </button>}
             </div>
             <OrdenSelector
               opciones={[

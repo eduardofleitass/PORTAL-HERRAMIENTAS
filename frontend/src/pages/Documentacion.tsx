@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { useNotificaciones } from "../context/NotificationContext";
 import { Trash2, RotateCcw, Pencil, Eye, X } from "lucide-react";
 import ConfirmModal from "../components/ConfirmModal";
 import Pagination from "../components/Pagination";
@@ -21,6 +22,7 @@ interface Documento {
 
 function Documentacion() {
   const { usuario } = useAuth();
+  const { agregar: notificar } = useNotificaciones();
   const toast = useToast();
 
   const [documentos, setDocumentos] = useState<Documento[]>([]);
@@ -105,6 +107,7 @@ function Documentacion() {
       setDocumentos((prev) => [...prev, creado]);
       setTitulo(""); setDescripcion(""); setSeccion(""); setArchivo(null); setMostrarFormulario(false);
       toast.addToast("Documento subido correctamente", "success");
+      notificar("Documento subido", `Se agrego "${titulo}" a documentacion`, "success");
     } catch { setErrorGuardar("Error de conexion"); }
     finally { setGuardando(false); }
   }
@@ -120,6 +123,7 @@ function Documentacion() {
       setDocumentos((prev) => prev.filter((d) => d.id !== id));
       setSeleccionado(null);
       toast.addToast("Documento eliminado", "success");
+      notificar("Documento eliminado", "Se elimino un documento", "warning");
     } catch { toast.addToast("Error de conexion con el servidor", "error"); }
   }
 
@@ -159,6 +163,7 @@ function Documentacion() {
       if (seleccionado?.id === editandoDoc.id) setSeleccionado(actualizado);
       cerrarEdicion();
       toast.addToast("Cambios guardados", "success");
+      notificar("Documento editado", `Se edito "${editTitulo}"`, "info");
     } catch {
       toast.addToast("Error al guardar los cambios", "error");
     } finally {

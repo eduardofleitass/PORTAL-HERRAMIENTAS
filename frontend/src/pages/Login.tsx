@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.tsx";
+import { useNotificaciones } from "../context/NotificationContext.tsx";
 import AnimatedLogo from "../components/AnimatedLogo";
 
 function Login() {
@@ -10,6 +11,7 @@ function Login() {
   const [cargando, setCargando] = useState(false);
   const navigate = useNavigate();
   const { login, logoutMessage } = useAuth();
+  const { agregar: notificar } = useNotificaciones();
 
   async function manejarLogin(evento: React.FormEvent) {
     evento.preventDefault();
@@ -32,6 +34,7 @@ function Login() {
       }
 
       login(datos.token, datos.usuario);
+      notificar("Inicio de sesion", `Bienvenido, ${datos.usuario?.nombre || username}`, "success");
       navigate("/");
 
     } catch (err) {
