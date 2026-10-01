@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Bell, X, AlertCircle, CheckCircle, Info } from "lucide-react";
 
 interface Notificacion {
@@ -57,6 +57,15 @@ export function useNotificaciones() {
 export function NotificationBell() {
   const { notifs, noLeidas, marcarLeida, marcarTodasLeidas, eliminar } = useNotificaciones();
   const [abierto, setAbierto] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const btnRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (abierto && btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setPos({ top: rect.bottom + 8, left: rect.left });
+    }
+  }, [abierto]);
 
   function formatearFecha(iso: string) {
     const d = new Date(iso);
@@ -73,13 +82,13 @@ export function NotificationBell() {
 
   return (
     <div className="notification-bell-container">
-      <button className="notification-bell-btn" onClick={() => setAbierto(!abierto)} title="Notificaciones">
+      <button ref={btnRef} className="notification-bell-btn" onClick={() => setAbierto(!abierto)} title="Notificaciones">
         <Bell size={18} />
         {noLeidas > 0 && <span className="notification-badge">{noLeidas}</span>}
       </button>
 
       {abierto && (
-        <div className="notification-dropdown">
+        <div className="notification-dropdown" style={{ top: pos.top, left: pos.left }}>
           <div className="notification-header">
             <span>Notificaciones</span>
             {notifs.length > 0 && (

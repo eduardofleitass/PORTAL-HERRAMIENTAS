@@ -3472,9 +3472,7 @@ tr.usuario-inactivo td {
 }
 
 .notification-dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
+  position: fixed;
   min-width: 280px;
   max-width: 320px;
   width: 340px;
