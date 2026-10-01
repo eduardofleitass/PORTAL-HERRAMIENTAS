@@ -1,8 +1,8 @@
 import {Controller,Get,Post,Patch,Delete, Param, Query, Body,UseGuards,} from "@nestjs/common";
 import { ErroresService, Error, CreateErrorDto, UpdateErrorDto } from "./errores.service.js";
 import { AuthGuard } from '../auth/auth.guard.js';
-import { RolesGuard } from '../auth/roles.guard.js';
-import { Roles } from '../auth/roles.decorator.js';
+import { PermisoGuard } from '../auth/permiso.guard.js';
+import { RequierePermiso } from '../auth/permiso.decorator.js';
 
 // @UseGuards a nivel de controller: todas las rutas requieren login
 // pero los GET los dejamos publicos para que cualquiera pueda consultar
@@ -40,18 +40,18 @@ export class ErroresController {
         return error;
     }
 
-    // POST protegido: solo ADMIN puede crear errores
+    // POST protegido: requiere permiso 'crear'
     @Post()
-    @UseGuards(AuthGuard, RolesGuard)
-    @Roles('admin')
+    @UseGuards(AuthGuard, PermisoGuard)
+    @RequierePermiso('crear')
     create(@Body() dto: CreateErrorDto): Error {
         return this.erroresService.create(dto);
     }
 
-    // PATCH protegido: solo ADMIN puede editar
+    // PATCH protegido: requiere permiso 'editar'
     @Patch(':id')
-    @UseGuards(AuthGuard, RolesGuard)
-    @Roles('admin')
+    @UseGuards(AuthGuard, PermisoGuard)
+    @RequierePermiso('editar')
     update(
         @Param('id') id: string,
         @Body() dto: UpdateErrorDto,
@@ -59,10 +59,10 @@ export class ErroresController {
         return this.erroresService.update(Number(id), dto);
     }
 
-    // DELETE protegido: solo ADMIN puede eliminar
+    // DELETE protegido: requiere permiso 'eliminar'
     @Delete(':id')
-    @UseGuards(AuthGuard, RolesGuard)
-    @Roles('admin')
+    @UseGuards(AuthGuard, PermisoGuard)
+    @RequierePermiso('eliminar')
     delete(@Param('id') id: string): { message: string } {
         return this.erroresService.delete(Number(id));
     }

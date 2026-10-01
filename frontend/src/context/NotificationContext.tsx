@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { useAuth } from "./AuthContext";
 
 export type NotificacionTipo = "error" | "warning" | "success" | "info";
 
@@ -9,6 +10,7 @@ export interface Notificacion {
   mensaje: string;
   fecha: string;
   leida: boolean;
+  usuarioId: number; // ID del usuario al que pertenece la notificacion
 }
 
 interface NotificationContextType {
@@ -23,18 +25,36 @@ interface NotificationContextType {
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
+function getStorageKey(usuarioId?: number): string {
+  return usuarioId ? `portal-notificaciones-${usuarioId}` : "portal-notificaciones";
+}
+
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
+  const { usuario } = useAuth();
+  const storageKey = getStorageKey(usuario?.id ?? undefined);
+
   const [notifs, setNotifs] = useState<Notificacion[]>(() => {
     try {
-      return JSON.parse(localStorage.getItem("portal-notificaciones") || "[]");
+      return JSON.parse(localStorage.getItem(storageKey) || "[]");
     } catch { return []; }
   });
 
+  // Al cambiar de usuario, recargar sus notificaciones
   useEffect(() => {
-    localStorage.setItem("portal-notificaciones", JSON.stringify(notifs));
-  }, [notifs]);
+    const key = getStorageKey(usuario?.id ?? undefined);
+    try {
+      const guardadas = JSON.parse(localStorage.getItem(key) || "[]");
+      setNotifs(guardadas);
+    } catch { setNotifs([]); }
+  }, [usuario?.id]);
+
+  useEffect(() => {
+    const key = getStorageKey(usuario?.id ?? undefined);
+    localStorage.setItem(key, JSON.stringify(notifs));
+  }, [notifs, usuario?.id]);
 
   const agregar = useCallback((titulo: string, mensaje: string, tipo: NotificacionTipo = "info") => {
+    if (!usuario) return;
     const nueva: Notificacion = {
       id: Date.now(),
       tipo,
@@ -42,9 +62,10 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       mensaje,
       fecha: new Date().toISOString(),
       leida: false,
+      usuarioId: usuario.id,
     };
     setNotifs((prev) => [nueva, ...prev].slice(0, 50));
-  }, []);
+  }, [usuario]);
 
   const marcarLeida = useCallback((id: number) => {
     setNotifs((prev) => prev.map((n) => n.id === id ? { ...n, leida: true } : n));
@@ -60,10 +81,12 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   const limpiar = useCallback(() => setNotifs([]), []);
 
-  const noLeidas = notifs.filter((n) => !n.leida).length;
+  // Filtrar solo las notificaciones del usuario actual para el badge/dropdown
+  const notifsUsuario = notifs.filter((n) => n.usuarioId === (usuario?.id ?? -1));
+  const noLeidas = notifsUsuario.filter((n) => !n.leida).length;
 
   return (
-    <NotificationContext.Provider value={{ notifs, noLeidas, agregar, marcarLeida, marcarTodasLeidas, eliminar, limpiar }}>
+    <NotificationContext.Provider value={{ notifs: notifsUsuario, noLeidas, agregar, marcarLeida, marcarTodasLeidas, eliminar, limpiar }}>
       {children}
     </NotificationContext.Provider>
   );

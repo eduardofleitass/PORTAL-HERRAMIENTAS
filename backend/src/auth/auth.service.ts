@@ -13,6 +13,10 @@ export interface Usuario {
   rol: 'admin' | 'usuario';
   avatar?: string;
   activo?: boolean;
+  permisos?: {
+    modulos: Record<string, boolean>;
+    acciones: Record<string, boolean>;
+  };
 }
 
 const BCRYPT_ROUNDS = 10;
@@ -67,6 +71,10 @@ export class AuthService {
 
   private findByUsername(username: string): Usuario | undefined {
     return this.findAll().find((u) => u.username === username);
+  }
+
+  findById(id: number): Usuario | undefined {
+    return this.findAll().find((u) => u.id === id);
   }
 
   /** Detecta si un string ya es un hash bcrypt */

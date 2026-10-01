@@ -5,8 +5,8 @@ import {
 import { FileInterceptor } from "@nestjs/platform-express";
 import { DocumentacionService } from "./documentacion.service.js";
 import { AuthGuard } from "../auth/auth.guard.js";
-import { RolesGuard } from "../auth/roles.guard.js";
-import { Roles } from "../auth/roles.decorator.js";
+import { PermisoGuard } from "../auth/permiso.guard.js";
+import { RequierePermiso } from "../auth/permiso.decorator.js";
 
 @Controller("documentacion")
 export class DocumentacionController {
@@ -30,8 +30,8 @@ export class DocumentacionController {
   }
 
   @Post()
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles("admin")
+  @UseGuards(AuthGuard, PermisoGuard)
+  @RequierePermiso("crear")
   @UseInterceptors(FileInterceptor("archivo"))
   create(
     @UploadedFile() archivo: { buffer: Buffer; originalname: string; size: number; mimetype: string },
@@ -52,15 +52,15 @@ export class DocumentacionController {
   }
 
   @Delete(":id")
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles("admin")
+  @UseGuards(AuthGuard, PermisoGuard)
+  @RequierePermiso("eliminar")
   delete(@Param("id") id: string) {
     return this.documentacionService.delete(Number(id));
   }
 
   @Patch(":id")
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles("admin")
+  @UseGuards(AuthGuard, PermisoGuard)
+  @RequierePermiso("editar")
   update(
     @Param("id") id: string,
     @Body() body: { titulo: string; descripcion: string; seccion: string }

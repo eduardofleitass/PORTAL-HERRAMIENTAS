@@ -1,8 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ProcedimientosService, Procedimiento, CreateProcedimientoDto, UpdateProcedimientoDto } from './procedimientos.service.js';
 import { AuthGuard } from '../auth/auth.guard.js';
-import { RolesGuard } from '../auth/roles.guard.js';
-import { Roles } from '../auth/roles.decorator.js';
+import { PermisoGuard } from '../auth/permiso.guard.js';
+import { RequierePermiso } from '../auth/permiso.decorator.js';
 
 // @Controller('procedimientos') le dice a NestJS:
 // "Todas las rutas de esta clase empiezan con /procedimientos"
@@ -51,16 +51,16 @@ export class ProcedimientosController {
   }
   //Post: para crear procedimientos
   @Post()
-  @UseGuards(AuthGuard,RolesGuard)
-  @Roles('admin')
+  @UseGuards(AuthGuard, PermisoGuard)
+  @RequierePermiso('crear')
   create (@Body() dto: CreateProcedimientoDto): Procedimiento{
     return this.procedimientosService.create(dto);
   }
 
   // PATCH: editar un procedimiento
   @Patch(':id')
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles('admin')
+  @UseGuards(AuthGuard, PermisoGuard)
+  @RequierePermiso('editar')
   update(
     @Param('id') id: string,
     @Body() dto: UpdateProcedimientoDto,
@@ -70,8 +70,8 @@ export class ProcedimientosController {
 
   // DELETE: eliminar un procedimiento
   @Delete(':id')
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles('admin')
+  @UseGuards(AuthGuard, PermisoGuard)
+  @RequierePermiso('eliminar')
   delete(@Param('id') id: string): { message: string } {
     return this.procedimientosService.delete(Number(id));
   }
