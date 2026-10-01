@@ -3,6 +3,7 @@ import { useToast } from "../context/ToastContext";
 import { useNotificaciones } from "../context/NotificationContext";
 import { usePermisos, puedeRealizarAccion } from "../context/AuthContext";
 import { Pencil, Trash2, RotateCcw, Printer, Search, Download } from "lucide-react";
+import { exportarPDFProcedimientos } from "../utils/exportPDF";
 import ConfirmModal from "../components/ConfirmModal";
 import Pagination from "../components/Pagination";
 import { usePagination } from "../hooks/usePagination";
@@ -268,7 +269,7 @@ function Procedimientos() {
               </div>
               
               {puedeRealizarAccion(permisos, "exportarPDF") && (
-                <button className="btn-exportar" onClick={() => window.print()} title="Imprimir / Exportar PDF">
+                <button className="btn-exportar" onClick={() => exportarPDFProcedimientos(procedimientos)} title="Imprimir / Exportar PDF">
                   <Printer size={14} /> PDF
                 </button>
               )}
