@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { useAuth, usePermisos, puedeRealizarAccion } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { useNotificaciones } from "../context/NotificationContext";
+import { usePermisos, puedeRealizarAccion } from "../context/AuthContext";
 import { Pencil, Trash2, RotateCcw, Printer, Search, Download } from "lucide-react";
 import ConfirmModal from "../components/ConfirmModal";
 import Pagination from "../components/Pagination";
@@ -24,7 +24,6 @@ interface Procedimiento {
 }
 
 function Procedimientos() {
-  const { usuario } = useAuth();
   const toast = useToast();
   const permisos = usePermisos();
   const { agregar: notificar } = useNotificaciones();
@@ -314,7 +313,6 @@ function Procedimientos() {
                         <span className="tiempo">{proc.tiempo_estimado}</span>
                       </div>
                     </div>
-                    {usuario?.rol === "admin" && (
                       <div className="item-acciones" onClick={(e) => e.stopPropagation()}>
                         {puedeRealizarAccion(permisos, "editar") && (<button className="btn-icon btn-icon-editar" title="Editar" onClick={() => iniciarEdicion(proc)}>
                           <Pencil size={16} />
@@ -323,7 +321,6 @@ function Procedimientos() {
                           <Trash2 size={16} />
                         </button>)}
                       </div>
-                    )}
                   </div>
                 ))}
                 <Pagination pag={pag} etiqueta="procedimientos" />

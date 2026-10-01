@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { useAuth, usePermisos, puedeRealizarAccion } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { useNotificaciones } from "../context/NotificationContext";
+import { usePermisos, puedeRealizarAccion } from "../context/AuthContext";
 import { Pencil, Trash2, RotateCcw, Printer, Search, Download } from "lucide-react";
 import ConfirmModal from "../components/ConfirmModal";
 import Pagination from "../components/Pagination";
@@ -22,7 +22,6 @@ interface ErrorItem {
 }
 
 function Errores() {
-  const { usuario } = useAuth();
   const toast = useToast();
   const permisos = usePermisos();
   const { agregar: notificar } = useNotificaciones();
@@ -309,16 +308,14 @@ function Errores() {
                         <span className={`frecuencia freq-${err.frecuencia}`}>{err.frecuencia}</span>
                       </div>
                     </div>
-                    {usuario?.rol === "admin" && (
                       <div className="item-acciones" onClick={(e) => e.stopPropagation()}>
-                        <button className="btn-icon btn-icon-editar" title="Editar" onClick={() => iniciarEdicion(err)}>
+                        {puedeRealizarAccion(permisos, "editar") && (<button className="btn-icon btn-icon-editar" title="Editar" onClick={() => iniciarEdicion(err)}>
                           <Pencil size={16} />
-                        </button>
-                        <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={() => setConfirmEliminar(err.id)}>
+                        </button>)}
+                        {puedeRealizarAccion(permisos, "eliminar") && (<button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={() => setConfirmEliminar(err.id)}>
                           <Trash2 size={16} />
-                        </button>
+                        </button>)}
                       </div>
-                    )}
                   </div>
                 ))}
                 <Pagination pag={pag} etiqueta="errores" />

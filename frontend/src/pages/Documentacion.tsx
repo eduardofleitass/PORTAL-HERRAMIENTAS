@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
+import { usePermisos, puedeRealizarAccion } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { useNotificaciones } from "../context/NotificationContext";
 import { Trash2, RotateCcw, Pencil, Eye, X } from "lucide-react";
@@ -21,7 +21,7 @@ interface Documento {
 }
 
 function Documentacion() {
-  const { usuario } = useAuth();
+  const permisos = usePermisos();
   const { agregar: notificar } = useNotificaciones();
   const toast = useToast();
 
@@ -203,7 +203,7 @@ function Documentacion() {
       ) : (
         <div className="split-layout">
           <div className="split-list">
-            {!loading && usuario?.rol === "admin" && (
+            {!loading && puedeRealizarAccion(permisos, "crear") && (
               <button className="btn-nuevo" onClick={() => setMostrarFormulario(true)}>+ Subir Documento</button>
             )}
             <div className="filtro-container">
@@ -248,16 +248,14 @@ function Documentacion() {
                       <span>{doc.nombreArchivo}</span>
                       <span>{(doc.tamano / 1024).toFixed(1)} KB</span>
                     </div>
-                    {usuario?.rol === "admin" && (
                     <div className="documento-acciones">
-                      <button className="btn-icon btn-icon-editar" title="Editar" onClick={(e) => { e.stopPropagation(); iniciarEdicion(doc); }}>
+                      {puedeRealizarAccion(permisos, "editar") && (<button className="btn-icon btn-icon-editar" title="Editar" onClick={(e) => { e.stopPropagation(); iniciarEdicion(doc); }}>
                         <Pencil size={16} />
-                      </button>
-                      <button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={(e) => { e.stopPropagation(); setConfirmEliminar(doc.id); }}>
+                      </button>)}
+                      {puedeRealizarAccion(permisos, "eliminar") && (<button className="btn-icon btn-icon-eliminar" title="Eliminar" onClick={(e) => { e.stopPropagation(); setConfirmEliminar(doc.id); }}>
                         <Trash2 size={16} />
-                      </button>
+                      </button>)}
                     </div>
-                    )}
                   </div>
                 ))}
                 <Pagination pag={pag} etiqueta="documentos" />
