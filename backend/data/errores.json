@@ -32,19 +32,6 @@
     ]
   },
   {
-    "id": 4,
-    "codigo": "prueba",
-    "titulo": "prueba",
-    "descripcion": "prueba",
-    "causa": "prueba",
-    "solucion": "prueba",
-    "modulo_afectado": "prueba",
-    "frecuencia": "alta",
-    "tags": [
-      "pruebas"
-    ]
-  },
-  {
     "id": 5,
     "codigo": "ERRO",
     "titulo": "ERROR",
