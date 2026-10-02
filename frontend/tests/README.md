@@ -1,4 +1,4 @@
-# Tests de regresion - Portal de Herramientas EPEM
+# Tests de regresion - Portal de Herramientas
 
 Suite de tests E2E con Playwright que valida los cambios recientes del portal.
 

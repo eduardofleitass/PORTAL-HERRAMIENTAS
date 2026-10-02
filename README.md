@@ -1,8 +1,12 @@
-# Portal de Herramientas — Soporte TIC EPEM
+# Portal de Herramientas
 
-Aplicación interna del equipo de Soporte TIC de EPEM. Centraliza los
-procedimientos operativos, los errores comunes con sus diagnósticos, la
-documentación del sistema y la trazabilidad de la actividad del equipo.
+Aplicación web de uso general para equipos de soporte, desarrollo o cualquier
+organización que necesite centralizar su conocimiento operativo.
+
+Reúne los procedimientos paso a paso, el catálogo de errores conocidos con sus
+diagnósticos, la documentación interna y la trazabilidad de quién hizo qué.
+Funciona igual de bien para un equipo de Help Desk, de desarrollo, de
+infraestructura o de operaciones.
 
 ---
 
@@ -29,10 +33,13 @@ documentación del sistema y la trazabilidad de la actividad del equipo.
 
 ## Qué resuelve
 
-Antes, el conocimiento del equipo de soporte estaba disperso: procedimientos en
-documentos sueltos, errores resueltos que se volvían a diagnosticar desde cero,
-manuales difíciles de encontrar. Este portal lo unifica en un único lugar con
-búsqueda, permisos por usuario y registro de quién hizo qué.
+En la mayoría de los equipos el conocimiento operativo está disperso:
+procedimientos en documentos sueltos, errores resueltos que se vuelven a
+diagnosticar desde cero, manuales difíciles de encontrar, y ninguna forma de
+saber quién cambió qué.
+
+Este portal lo unifica en un único lugar, con búsqueda, permisos por usuario y
+registro de actividad.
 
 | Necesidad | Cómo lo cubre |
 |---|---|
@@ -206,9 +213,8 @@ npm run dev
 | Backend | http://localhost:3001 |
 
 > **Atención al puerto del frontend.** Vite toma el primer puerto libre a partir
-> de 5173. Si tenés otro proyecto corriendo (por ejemplo el visor de Tickets),
-> el portal puede quedar en **5174 o 5175**. El puerto real se muestra al
-> arrancar Vite.
+> de 5173. Si tenés otro proyecto corriendo en esa máquina, el portal puede
+> quedar en **5174 o 5175**. El puerto real se muestra al arrancar Vite.
 
 ### Producción (local)
 
@@ -612,6 +618,6 @@ Verificar que no haya otro backend corriendo en el puerto 3001, y que
 
 ## Créditos
 
-Desarrollado para el equipo de **Soporte TIC de EPEM**.
+Desarrollado para uso general en equipos de soporte, desarrollo y operaciones.
 
 Stack: NestJS · React · TypeScript · Vite · Electron
