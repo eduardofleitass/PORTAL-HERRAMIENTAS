@@ -71,6 +71,13 @@ function AppLayout() {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  // Cerrar sidebar mobile al cambiar de ruta
+  useEffect(() => {
+    setMobileOpen(false);
+    // Restaurar scroll del body por si quedo bloqueado
+    document.body.style.overflow = "";
+  }, [location.pathname]);
+
   return (
     <div className="app-layout">
       <div className={`sidebar-overlay ${mobileOpen ? "open" : ""}`} onClick={() => setMobileOpen(false)} />
