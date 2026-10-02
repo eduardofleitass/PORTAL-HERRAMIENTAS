@@ -1,9 +1,11 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, OnModuleInit } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as crypto from 'crypto';
 import { getDataPath } from '../data-path.js';
-import jwt from 'jsonwebtoken';
+import jwt, { type SignOptions } from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { CONFIG } from '../config.js';
 
 export interface Usuario {
   id: number;
@@ -25,13 +27,14 @@ const BCRYPT_ROUNDS = 10;
  * Duracion del token JWT. Con sesion deslizante este valor actua como
  * "ventana de inactividad": mientras el usuario haga peticiones, el token
  * se renueva; si deja de pedir por TOKEN_TTL, la sesion muere.
+ * Configurable via TOKEN_TTL.
  */
-export const TOKEN_TTL = '3m';
+export const TOKEN_TTL = CONFIG.tokenTtl;
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit {
   private readonly dataPath: string;
-  private readonly jwtSecret = 'portal-herramientas-secreto-2026';
+  private readonly jwtSecret: string = CONFIG.jwtSecret;
 
   constructor() {
     this.dataPath = getDataPath('usuarios.json');
@@ -39,9 +42,17 @@ export class AuthService {
     this.migrarPasswordsEnClaro();
   }
 
+  onModuleInit(): void {
+    this.avisarPasswordPorDefecto();
+  }
+
   /**
    * Si usuarios.json no existe (primer arranque o repo recien clonado),
    * lo crea a partir de usuarios.example.json.
+   *
+   * IMPORTANTE: ya no se crea un admin con contrasena 'admin'. Si no hay
+   * plantilla, se genera una contrasena aleatoria y se imprime UNA sola vez
+   * por consola, para evitar credenciales por defecto conocidas.
    */
   private asegurarArchivo(): void {
     try {
@@ -51,23 +62,55 @@ export class AuthService {
       if (fs.existsSync(ejemploPath)) {
         fs.copyFileSync(ejemploPath, this.dataPath);
         console.warn('[auth] usuarios.json no existia: creado desde usuarios.example.json');
-      } else {
-        // Sin plantilla: crear un admin por defecto
-        const base: Usuario[] = [
-          {
-            id: 1,
-            username: 'admin',
-            password: 'admin',
-            nombre: 'Administrador',
-            rol: 'admin',
-            activo: true,
-          },
-        ];
-        fs.writeFileSync(this.dataPath, JSON.stringify(base, null, 2), 'utf-8');
-        console.warn('[auth] usuarios.json no existia: creado con admin/admin por defecto');
+        console.warn('[auth] ATENCION: revise las contrasenas de la plantilla antes de usar en produccion.');
+        return;
       }
+
+      // Sin plantilla: crear un admin con contrasena aleatoria
+      const passwordInicial = crypto.randomBytes(9).toString('base64url');
+      const base: Usuario[] = [
+        {
+          id: 1,
+          username: 'admin',
+          password: bcrypt.hashSync(passwordInicial, BCRYPT_ROUNDS),
+          nombre: 'Administrador',
+          rol: 'admin',
+          activo: true,
+        },
+      ];
+      fs.writeFileSync(this.dataPath, JSON.stringify(base, null, 2), 'utf-8');
+
+      console.warn('\n============================================================');
+      console.warn('[auth] usuarios.json no existia: creado usuario admin');
+      console.warn(`[auth] Usuario:    admin`);
+      console.warn(`[auth] Contrasena: ${passwordInicial}`);
+      console.warn('[auth] Guarde esta contrasena AHORA: no se vuelve a mostrar.');
+      console.warn('[auth] Cambiela desde Perfil despues del primer ingreso.');
+      console.warn('============================================================\n');
     } catch (err) {
       console.error('[auth] No se pudo asegurar usuarios.json:', err);
+    }
+  }
+
+  /**
+   * Avisa si algun usuario sigue con la contrasena de la plantilla de ejemplo.
+   * No la cambia: solo advierte, para no romper flujos de desarrollo.
+   */
+  private avisarPasswordPorDefecto(): void {
+    try {
+      const usuarios = this.findAll();
+      const inseguros = usuarios.filter(
+        (u) => typeof u.password === 'string' && bcrypt.compareSync('admin', u.password),
+      );
+      if (inseguros.length) {
+        console.warn('\n[auth] ADVERTENCIA DE SEGURIDAD');
+        console.warn(`[auth] ${inseguros.length} usuario(s) usan la contrasena por defecto "admin":`);
+        inseguros.forEach((u) => console.warn(`[auth]   - ${u.username} (${u.rol})`));
+        console.warn('[auth] Cambielas desde el modulo de Perfil.');
+        console.warn('');
+      }
+    } catch {
+      // si el archivo no se puede leer, el error ya se maneja en otro lugar
     }
   }
 
@@ -135,7 +178,7 @@ export class AuthService {
       username: usuario.username,
       rol: usuario.rol,
     };
-    const token = jwt.sign(payload, this.jwtSecret, { expiresIn: TOKEN_TTL });
+    const token = jwt.sign(payload, this.jwtSecret, { expiresIn: TOKEN_TTL } as SignOptions);
     const { password: _, ...usuarioSinPassword } = usuario;
     return { token, usuario: usuarioSinPassword };
   }
@@ -166,7 +209,7 @@ export class AuthService {
       username: usuario.username,
       rol: usuario.rol,
     };
-    const nuevoToken = jwt.sign(payload, this.jwtSecret, { expiresIn: TOKEN_TTL });
+    const nuevoToken = jwt.sign(payload, this.jwtSecret, { expiresIn: TOKEN_TTL } as SignOptions);
     const { password: _, ...usuarioSinPassword } = usuario;
     return { token: nuevoToken, usuario: usuarioSinPassword };
   }

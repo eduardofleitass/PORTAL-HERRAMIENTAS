@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.tsx";
 import { useNotificaciones } from "../context/NotificationContext.tsx";
 import AnimatedLogo from "../components/AnimatedLogo";
+import { api } from "../config/api";
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -19,7 +20,7 @@ function Login() {
     setCargando(true);
 
     try {
-      const respuesta = await fetch("http://localhost:3001/auth/login", {
+      const respuesta = await fetch(api("/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),

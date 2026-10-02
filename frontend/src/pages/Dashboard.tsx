@@ -11,6 +11,7 @@ import {
   Hash
 } from "lucide-react";
 import DonutChart from "../components/DonutChart";
+import { api } from "../config/api";
 
 interface MetricasData {
   totales: { procedimientos: number; errores: number; documentacion: number };
@@ -30,8 +31,8 @@ function Dashboard() {
     async function cargar() {
       try {
         const [_, metricasResp] = await Promise.all([
-          fetch("http://localhost:3001/configuracion/modulos-portal"),
-          fetch("http://localhost:3001/metricas"),
+          fetch(api("/configuracion/modulos-portal")),
+          fetch(api("/metricas")),
         ]);
         await _.json();
         const metricasData = await metricasResp.json();

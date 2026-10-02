@@ -9,6 +9,7 @@ import Pagination from "../components/Pagination";
 import { usePagination } from "../hooks/usePagination";
 import { useSort } from "../hooks/useSort";
 import OrdenSelector from "../components/OrdenSelector";
+import { api } from "../config/api";
 
 interface ErrorItem {
   id: number;
@@ -54,7 +55,7 @@ function Errores() {
     setErrorMsg("");
     try {
       const token = localStorage.getItem("token");
-      const respuesta = await fetch("http://localhost:3001/errores", {
+      const respuesta = await fetch(api("/errores"), {
         headers: token ? { Authorization: "Bearer " + token } : {}
       });
       const datos = await respuesta.json();
@@ -117,7 +118,7 @@ function Errores() {
     if (!token) { setErrorGuardar("No hay sesion."); setGuardando(false); return; }
 
     try {
-      const respuesta = await fetch("http://localhost:3001/errores", {
+      const respuesta = await fetch(api("/errores"), {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({
@@ -145,7 +146,7 @@ function Errores() {
     if (!token) { setErrorGuardar("No hay sesion."); setGuardando(false); return; }
 
     try {
-      const respuesta = await fetch(`http://localhost:3001/errores/${editandoId}`, {
+      const respuesta = await fetch(api(`/errores/${editandoId}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({
@@ -169,7 +170,7 @@ function Errores() {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const respuesta = await fetch(`http://localhost:3001/errores/${id}`, {
+      const respuesta = await fetch(api(`/errores/${id}`), {
         method: "DELETE", headers: { "Authorization": `Bearer ${token}` }
       });
       if (!respuesta.ok) { toast.addToast("Error al eliminar el error", "error"); return; }

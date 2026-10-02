@@ -3,6 +3,8 @@ Dependencias
 **/dist/
 **/.env
 **/.env.local
+# Secreto JWT generado automaticamente en el primer arranque
+backend/data/.jwt-secret
 **/*.sqlite
 **/data.sqlite
 Logs

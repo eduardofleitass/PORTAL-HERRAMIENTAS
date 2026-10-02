@@ -9,6 +9,7 @@ import Pagination from "../components/Pagination";
 import { usePagination } from "../hooks/usePagination";
 import { useSort } from "../hooks/useSort";
 import OrdenSelector from "../components/OrdenSelector";
+import { api } from "../config/api";
 
 interface Paso {
   orden: number;
@@ -52,7 +53,7 @@ function Procedimientos() {
     setError("");
     try {
       const token = localStorage.getItem("token");
-      const respuesta = await fetch("http://localhost:3001/procedimientos", {
+      const respuesta = await fetch(api("/procedimientos"), {
         headers: token ? { Authorization: "Bearer " + token } : {}
       });
       const datos = await respuesta.json();
@@ -110,7 +111,7 @@ function Procedimientos() {
     if (!token) { setErrorGuardar("No hay sesion."); setGuardando(false); return; }
 
     try {
-      const respuesta = await fetch("http://localhost:3001/procedimientos", {
+      const respuesta = await fetch(api("/procedimientos"), {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({
@@ -149,7 +150,7 @@ function Procedimientos() {
     if (!token) { setErrorGuardar("No hay sesion."); setGuardando(false); return; }
 
     try {
-      const respuesta = await fetch(`http://localhost:3001/procedimientos/${editandoId}`, {
+      const respuesta = await fetch(api(`/procedimientos/${editandoId}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({
@@ -171,7 +172,7 @@ function Procedimientos() {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const respuesta = await fetch(`http://localhost:3001/procedimientos/${id}`, {
+      const respuesta = await fetch(api(`/procedimientos/${id}`), {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });

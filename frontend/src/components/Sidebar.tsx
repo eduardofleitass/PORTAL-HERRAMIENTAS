@@ -16,10 +16,11 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
+import { api } from "../config/api";
 
 function avatarUrl(avatar?: string): string {
   if (!avatar) return "";
-  return `http://localhost:3001/${avatar}`;
+  return api(`/${avatar}`);
 }
 
 interface SidebarProps {

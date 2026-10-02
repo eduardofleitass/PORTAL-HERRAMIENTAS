@@ -2,10 +2,11 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { User, Camera, Save } from "lucide-react";
+import { api } from "../config/api";
 
 function avatarUrl(avatar?: string): string {
   if (!avatar) return "";
-  return `http://localhost:3001/${avatar}`;
+  return api(`/${avatar}`);
 }
 
 function Perfil() {
@@ -35,7 +36,7 @@ function Perfil() {
         body.password = passwordNuevo;
       }
 
-      const res = await fetch(`http://localhost:3001/usuarios/${usuario.id}`, {
+      const res = await fetch(api(`/usuarios/${usuario.id}`), {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -68,7 +69,7 @@ function Perfil() {
     try {
       const fd = new FormData();
       fd.append("avatar", file);
-      const res = await fetch(`http://localhost:3001/usuarios/${usuario.id}/avatar`, {
+      const res = await fetch(api(`/usuarios/${usuario.id}/avatar`), {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
         body: fd,

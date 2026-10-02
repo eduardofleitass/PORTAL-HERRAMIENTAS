@@ -21,6 +21,7 @@ import { usePagination } from "../hooks/usePagination";
 import { useSort } from "../hooks/useSort";
 import { useToast } from "../context/ToastContext";
 import { useAuth } from "../context/AuthContext";
+import { api } from "../config/api";
 
 interface LogEntry {
   id: number;
@@ -159,8 +160,8 @@ function Logs() {
       const headers: Record<string, string> = {};
       if (token) headers["Authorization"] = `Bearer ${token}`;
       const [logsResp, resumenResp] = await Promise.all([
-        fetch("http://localhost:3001/logs", { headers }),
-        fetch("http://localhost:3001/logs/resumen", { headers }),
+        fetch(api("/logs"), { headers }),
+        fetch(api("/logs/resumen"), { headers }),
       ]);
       if (!logsResp.ok) throw new Error("Error al cargar logs");
       const datos = await logsResp.json();
@@ -186,7 +187,7 @@ function Logs() {
     const token = localStorage.getItem("token");
     if (!token) { toast.addToast("No hay sesion activa", "warning"); return; }
     try {
-      const res = await fetch("http://localhost:3001/logs", {
+      const res = await fetch(api("/logs"), {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

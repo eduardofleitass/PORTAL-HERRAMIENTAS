@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, X, FileText, AlertCircle, ClipboardList, Loader } from "lucide-react";
+import { api } from "../config/api";
 
 interface Resultado {
   id: number;
@@ -23,9 +24,9 @@ function SearchModal({ visible, onClose }: { visible: boolean; onClose: () => vo
     setLoading(true);
     try {
       const [docRes, errRes, procRes] = await Promise.all([
-        fetch("http://localhost:3001/documentacion"),
-        fetch("http://localhost:3001/errores"),
-        fetch("http://localhost:3001/procedimientos"),
+        fetch(api("/documentacion")),
+        fetch(api("/errores")),
+        fetch(api("/procedimientos")),
       ]);
       const documentos = docRes.ok ? await docRes.json() : [];
       const errores = errRes.ok ? await errRes.json() : [];

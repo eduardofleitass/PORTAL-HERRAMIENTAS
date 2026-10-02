@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { AlertTriangle, RotateCcw, Home } from "lucide-react";
+import { api } from "../config/api";
 
 interface Props {
   children: ReactNode;
@@ -34,7 +35,7 @@ class ErrorBoundary extends Component<Props, State> {
 
     // Registrar en el backend (best-effort, no bloquea)
     try {
-      fetch("http://localhost:3001/logs", {
+      fetch(api("/logs"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

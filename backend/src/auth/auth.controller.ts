@@ -1,10 +1,11 @@
-import { Controller, Post, Body, Patch, UploadedFile, UseInterceptors, Req, Get, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, Patch, UploadedFile, UseInterceptors, Req, Get, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { AuthService } from './auth.service.js';
+import { LoginThrottleGuard } from './login-throttle.guard.js';
 import { getDataPath } from '../data-path.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -26,14 +27,35 @@ interface LoginDto{
 
 @Controller('auth')
 export class AuthController{
-    constructor(private readonly authService: AuthService) {}
+    constructor(
+        private readonly authService: AuthService,
+        private readonly throttle: LoginThrottleGuard,
+    ) {}
 
     @Post('login')
-    login(@Body() credenciales: LoginDto){
+    @UseGuards(LoginThrottleGuard)
+    login(@Body() credenciales: LoginDto, @Req() req: Request){
         if (!credenciales.username || !credenciales.password){
             throw new UnauthorizedException('Username y password son requeridos');
         }
-        return this.authService.login(credenciales.username, credenciales.password)
+        const ip = this.obtenerIp(req);
+        try {
+            const resultado = this.authService.login(credenciales.username, credenciales.password);
+            // Login correcto: limpiar el contador de intentos de esta IP
+            this.throttle.limpiar(ip);
+            return resultado;
+        } catch (err) {
+            // Login fallido: sumar un intento adicional al contador
+            this.throttle.registrarFallo(ip);
+            throw err;
+        }
+    }
+
+    /** Extrae la IP del cliente (respeta X-Forwarded-For detras de un proxy) */
+    private obtenerIp(req: any): string {
+        const fwd = req.headers?.['x-forwarded-for'];
+        if (typeof fwd === 'string' && fwd) return fwd.split(',')[0].trim();
+        return req.ip ?? req.socket?.remoteAddress ?? 'desconocida';
     }
 
     // POST /auth/refresh - renueva el token (sesion deslizante).

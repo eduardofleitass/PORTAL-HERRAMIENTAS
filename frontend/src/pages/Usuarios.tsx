@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import type { Permisos } from "../context/AuthContext";
 import { Plus, Pencil, Trash2, Shield, User, Camera, RotateCcw } from "lucide-react";
 import ConfirmModal from "../components/ConfirmModal";
+import { api } from "../config/api";
 
 interface Usuario {
   id: number;
@@ -25,7 +26,7 @@ interface FormData {
 
 function avatarUrl(avatar?: string): string {
   if (!avatar) return "";
-  return `http://localhost:3001/${avatar}`;
+  return api(`/${avatar}`);
 }
 
 function Usuarios() {
@@ -56,7 +57,7 @@ function Usuarios() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("http://localhost:3001/usuarios", {
+      const res = await fetch(api("/usuarios"), {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Error al cargar usuarios");
@@ -115,8 +116,8 @@ function Usuarios() {
     e.preventDefault();
     try {
       const url = editando
-        ? `http://localhost:3001/usuarios/${editando.id}`
-        : "http://localhost:3001/usuarios";
+        ? api(`/usuarios/${editando.id}`)
+        : api("/usuarios");
       const method = editando ? "PATCH" : "POST";
       const body = editando
         ? { ...form, ...(form.password ? {} : { password: undefined }) }
@@ -153,7 +154,7 @@ function Usuarios() {
     if (!token) return;
     const nuevoEstado = !(u.activo !== false);
     try {
-      const res = await fetch(`http://localhost:3001/usuarios/${u.id}`, {
+      const res = await fetch(api(`/usuarios/${u.id}`), {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -174,7 +175,7 @@ function Usuarios() {
     try {
       const fd = new FormData();
       fd.append("avatar", avatarFile);
-      const res = await fetch(`http://localhost:3001/usuarios/${userId}/avatar`, {
+      const res = await fetch(api(`/usuarios/${userId}/avatar`), {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
         body: fd,
@@ -187,7 +188,7 @@ function Usuarios() {
 
   async function eliminar(id: number) {
     try {
-      const res = await fetch(`http://localhost:3001/usuarios/${id}`, {
+      const res = await fetch(api(`/usuarios/${id}`), {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

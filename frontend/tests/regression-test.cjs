@@ -22,6 +22,22 @@ function check(name, ok, detail = '') {
 async function login(page, user = 'admin', pass = 'admin') {
   await page.goto(`${BASE}/#/login`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(900);
+
+  // Reutilizar la sesion si ya hay un token valido: evita gastar intentos
+  // del rate limit del backend (5 logins/min por IP) y acelera la suite.
+  const yaLogueado = await page.evaluate(() => {
+    const t = localStorage.getItem('token');
+    if (!t) return false;
+    try {
+      const p = JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+      return p.exp * 1000 > Date.now() + 30000; // al menos 30s de vida
+    } catch { return false; }
+  });
+  if (yaLogueado) {
+    await page.evaluate(() => localStorage.setItem('portal-ultima-actividad', String(Date.now())));
+    return true;
+  }
+
   const inputs = await page.$$('input');
   if (inputs.length < 2) return false;
   await inputs[0].fill(user);
@@ -29,7 +45,22 @@ async function login(page, user = 'admin', pass = 'admin') {
   await pw.fill(pass);
   await page.click('button[type="submit"]');
   await page.waitForTimeout(2200);
-  return await page.evaluate(() => !!localStorage.getItem('token'));
+
+  const ok = await page.evaluate(() => !!localStorage.getItem('token'));
+  if (!ok) {
+    // Puede ser rate limiting: esperar y reintentar una vez
+    const cuerpo = await page.evaluate(() => document.body.innerText);
+    if (/demasiados intentos/i.test(cuerpo)) {
+      const m = cuerpo.match(/espere (\d+) segundo/i);
+      const espera = m ? (Number(m[1]) + 1) * 1000 : 2000;
+      console.log(`  (rate limit: esperando ${espera/1000}s)`);
+      await page.waitForTimeout(espera);
+      await page.click('button[type="submit"]');
+      await page.waitForTimeout(2200);
+      return await page.evaluate(() => !!localStorage.getItem('token'));
+    }
+  }
+  return ok;
 }
 
 (async () => {
@@ -135,11 +166,14 @@ async function login(page, user = 'admin', pass = 'admin') {
     await page.waitForTimeout(1500);
 
     let popup = null;
+    // El popup se abre con window.open: hay que registrar los listeners ANTES
+    // del click, tanto en el contexto como en la pagina.
     ctx.on('page', p => { popup = p; });
+    page.on('popup', p => { popup = p; });
     const pdfBtn = await page.$('.btn-exportar');
     if (pdfBtn) {
       await pdfBtn.click();
-      await page.waitForTimeout(2500);
+      await page.waitForTimeout(3500);
     }
     if (popup) {
       const content = await popup.evaluate(() => document.body.innerText);
@@ -160,15 +194,25 @@ async function login(page, user = 'admin', pass = 'admin') {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const page = await ctx.newPage();
     await login(page);
+    // Marcar actividad para que el tick de inactividad no cierre la sesion
+    // mientras corre el resto de la seccion
+    await page.evaluate(() => localStorage.setItem('portal-ultima-actividad', String(Date.now())));
     await page.goto(`${BASE}/#/`, { waitUntil: 'networkidle' });
     await page.waitForTimeout(1200);
 
-    const hidden = await page.evaluate(() => {
+    const sidebarInfo = await page.evaluate(() => {
       const s = document.querySelector('.sidebar');
+      if (!s) return null;
       const r = s.getBoundingClientRect();
-      return r.left < -50 || getComputedStyle(s).opacity === '0';
+      return { left: r.left, opacidad: getComputedStyle(s).opacity };
     });
-    check('Sidebar oculto al inicio en mobile', hidden);
+    if (!sidebarInfo) {
+      // La sesion pudo expirar por el tick de inactividad durante el test
+      check('Sidebar presente en mobile', false, 'sesion expirada durante el test');
+    } else {
+      const hidden = sidebarInfo.left < -50 || sidebarInfo.opacidad === '0';
+      check('Sidebar oculto al inicio en mobile', hidden);
+    }
 
     const hamburgerVisible = await page.evaluate(() => {
       const h = document.querySelector('.mobile-hamburger');
@@ -251,7 +295,12 @@ async function login(page, user = 'admin', pass = 'admin') {
       const hasError = await page.evaluate(() => !!document.querySelector('.error:not(.error-retry)'));
       if (hasError) errors.push(`error visible en ${h}`);
     }
-    const realErrors = errors.filter(e => !/favicon|Download the React/i.test(e));
+    // Ignorar ruido esperado del entorno de test:
+    //  - favicon / React DevTools
+    //  - 429 del rate limiting (los tests hacen muchos logins a proposito)
+    const realErrors = errors.filter(e =>
+      !/favicon|Download the React|429|Too Many Requests/i.test(e)
+    );
     check('Sin errores JS en las 7 paginas', realErrors.length === 0, realErrors.slice(0,3).join(' | '));
     await ctx.close();
   }

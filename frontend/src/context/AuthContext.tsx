@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { api } from "../config/api";
 
 export interface Permisos {
   modulos: {
@@ -106,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const actual = localStorage.getItem("token");
     if (!actual) return;
     try {
-      const res = await fetch("http://localhost:3001/auth/refresh", {
+      const res = await fetch(api("/auth/refresh"), {
         method: "POST",
         headers: { Authorization: "Bearer " + actual },
       });

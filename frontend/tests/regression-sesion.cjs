@@ -19,6 +19,10 @@ function check(name, ok, detail = '') {
   console.log(`${ok ? 'PASS' : 'FAIL'} | ${name}${detail ? ' :: ' + detail : ''}`);
 }
 
+/**
+ * Login resiliente al rate limiting del backend (5 intentos/min por IP).
+ * Si detecta 429, espera lo que indique el servidor y reintenta una vez.
+ */
 async function login(page) {
   await page.goto(`${BASE}/#/login`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(900);
@@ -26,8 +30,22 @@ async function login(page) {
   await inputs[0].fill('admin');
   await (await page.$('input[type="password"]')).fill('admin');
   await page.click('button[type="submit"]');
-  await page.waitForTimeout(2000);
-  return await page.evaluate(() => !!localStorage.getItem('token'));
+  await page.waitForTimeout(2200);
+
+  let ok = await page.evaluate(() => !!localStorage.getItem('token'));
+  if (!ok) {
+    const cuerpo = await page.evaluate(() => document.body.innerText);
+    if (/demasiados intentos/i.test(cuerpo)) {
+      const m = cuerpo.match(/espere (\d+) segundo/i);
+      const espera = m ? (Number(m[1]) + 1) * 1000 : 2000;
+      console.log(`  (rate limit: esperando ${espera / 1000}s)`);
+      await page.waitForTimeout(espera);
+      await page.click('button[type="submit"]');
+      await page.waitForTimeout(2200);
+      ok = await page.evaluate(() => !!localStorage.getItem('token'));
+    }
+  }
+  return ok;
 }
 
 function expDeToken(page) {

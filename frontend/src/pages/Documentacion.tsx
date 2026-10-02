@@ -9,6 +9,7 @@ import Pagination from "../components/Pagination";
 import { usePagination } from "../hooks/usePagination";
 import { useSort } from "../hooks/useSort";
 import OrdenSelector from "../components/OrdenSelector";
+import { api } from "../config/api";
 
 interface Documento {
   id: number;
@@ -53,7 +54,7 @@ function Documentacion() {
   useEffect(() => {
     if (!vistaPrevia) { setContenidoTxt(null); return; }
     if (vistaPrevia.rutaArchivo.endsWith(".pdf")) { setContenidoTxt(null); return; }
-    fetch(`http://localhost:3001${vistaPrevia.rutaArchivo}`)
+    fetch(api(`${vistaPrevia.rutaArchivo}`))
       .then((r) => r.text())
       .then((text) => setContenidoTxt(text))
       .catch(() => setContenidoTxt("[No se pudo cargar el contenido del archivo]"));
@@ -64,7 +65,7 @@ function Documentacion() {
     setError("");
     try {
       const token = localStorage.getItem("token");
-      const respuesta = await fetch("http://localhost:3001/documentacion", {
+      const respuesta = await fetch(api("/documentacion"), {
         headers: token ? { Authorization: "Bearer " + token } : {}
       });
       const datos = await respuesta.json();
@@ -103,7 +104,7 @@ function Documentacion() {
       formData.append("descripcion", descripcion);
       formData.append("seccion", seccion);
 
-      const respuesta = await fetch("http://localhost:3001/documentacion", {
+      const respuesta = await fetch(api("/documentacion"), {
         method: "POST", headers: { "Authorization": `Bearer ${token}` }, body: formData
       });
       if (!respuesta.ok) { const datos = await respuesta.json(); setErrorGuardar(datos.message || "Error"); setGuardando(false); return; }
@@ -120,7 +121,7 @@ function Documentacion() {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const respuesta = await fetch(`http://localhost:3001/documentacion/${id}`, {
+      const respuesta = await fetch(api(`/documentacion/${id}`), {
         method: "DELETE", headers: { "Authorization": `Bearer ${token}` }
       });
       if (!respuesta.ok) { toast.addToast("Error al eliminar el documento", "error"); return; }
@@ -154,7 +155,7 @@ function Documentacion() {
     if (!token) { toast.addToast("No hay sesion activa", "warning"); return; }
     setGuardando(true);
     try {
-      const respuesta = await fetch(`http://localhost:3001/documentacion/${editandoDoc.id}`, {
+      const respuesta = await fetch(api(`/documentacion/${editandoDoc.id}`), {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -343,7 +344,7 @@ function Documentacion() {
             <div className="vista-previa-body">
               {vistaPrevia.rutaArchivo.endsWith(".pdf") ? (
                 <iframe
-                  src={`http://localhost:3001${vistaPrevia.rutaArchivo}`}
+                  src={api(`${vistaPrevia.rutaArchivo}`)}
                   className="vista-previa-iframe"
                   title={vistaPrevia.titulo}
                 />
