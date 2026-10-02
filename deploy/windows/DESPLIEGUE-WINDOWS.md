@@ -335,6 +335,42 @@ Get-NetTCPConnection -LocalPort 3001 -ErrorAction SilentlyContinue |
     ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
 ```
 
+### Error al compilar: "EPERM: operation not permitted, unlink ...rollup.win32-x64-msvc.node"
+
+Windows no permite reemplazar archivos que otro proceso tiene abiertos. El
+`node_modules` del frontend lo bloquea alguno de estos:
+
+- Un **servidor de desarrollo corriendo** (`npm run dev`) en ese mismo proyecto
+- **VS Code** con el proyecto abierto
+- El **antivirus** escaneando la carpeta
+
+**Solución:** el `build.ps1` ahora detecta estos procesos y te ofrece cerrarlos
+automáticamente al inicio. Si preferís hacerlo a mano:
+
+```powershell
+# Ver que procesos de Node estan corriendo
+Get-CimInstance Win32_Process -Filter "Name='node.exe'" |
+    Select-Object ProcessId, CommandLine | Format-List
+
+# Cerrar el que bloquea (el que apunta a la carpeta del portal)
+Stop-Process -Id <PID> -Force
+```
+
+**Si la instalación quedo a medias** (el error ocurre mientras borraba paquetes),
+reparala sin borrar nada:
+
+```powershell
+cd frontend
+npm install
+```
+
+El script ya no usa `npm ci` justamente por esto: `npm ci` borra `node_modules`
+completo antes de instalar, así que un solo archivo bloqueado arruina toda la
+instalación. `npm install` actualiza en su lugar y no borra lo que ya está bien.
+
+**Prevención:** agregá la carpeta del proyecto a las exclusiones del antivirus
+(Windows Defender → Protección antivirus → Exclusions).
+
 ### El servicio arranca y se detiene
 
 Mirá los logs:
