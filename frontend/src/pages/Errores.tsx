@@ -53,7 +53,10 @@ function Errores() {
     setLoading(true);
     setErrorMsg("");
     try {
-      const respuesta = await fetch("http://localhost:3001/errores");
+      const token = localStorage.getItem("token");
+      const respuesta = await fetch("http://localhost:3001/errores", {
+        headers: token ? { Authorization: "Bearer " + token } : {}
+      });
       const datos = await respuesta.json();
       setErrores(datos);
     } catch { setErrorMsg("No se pudieron cargar los errores"); }

@@ -7,8 +7,12 @@ import { DocumentacionService } from "./documentacion.service.js";
 import { AuthGuard } from "../auth/auth.guard.js";
 import { PermisoGuard } from "../auth/permiso.guard.js";
 import { RequierePermiso } from "../auth/permiso.decorator.js";
+import { ModuloGuard } from "../auth/modulo.guard.js";
+import { RequiereModulo } from "../auth/modulo.decorator.js";
 
 @Controller("documentacion")
+@UseGuards(AuthGuard, ModuloGuard)
+@RequiereModulo("documentacion")
 export class DocumentacionController {
   constructor(private readonly documentacionService: DocumentacionService) {}
 

@@ -51,7 +51,10 @@ function Procedimientos() {
     setLoading(true);
     setError("");
     try {
-      const respuesta = await fetch("http://localhost:3001/procedimientos");
+      const token = localStorage.getItem("token");
+      const respuesta = await fetch("http://localhost:3001/procedimientos", {
+        headers: token ? { Authorization: "Bearer " + token } : {}
+      });
       const datos = await respuesta.json();
       setProcedimientos(datos);
     } catch (err) {

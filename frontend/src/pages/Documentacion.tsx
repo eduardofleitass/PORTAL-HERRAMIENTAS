@@ -63,7 +63,10 @@ function Documentacion() {
     setLoading(true);
     setError("");
     try {
-      const respuesta = await fetch("http://localhost:3001/documentacion");
+      const token = localStorage.getItem("token");
+      const respuesta = await fetch("http://localhost:3001/documentacion", {
+        headers: token ? { Authorization: "Bearer " + token } : {}
+      });
       const datos = await respuesta.json();
       setDocumentos(datos);
     } catch { setError("No se pudieron cargar los documentos"); }

@@ -4,7 +4,9 @@ import { diskStorage } from 'multer';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { UsuariosService, CrearUsuarioDto } from './usuarios.service.js';
-import { AdminGuard } from '../auth/admin.guard.js';
+import { AuthGuard } from '../auth/auth.guard.js';
+import { ModuloGuard } from '../auth/modulo.guard.js';
+import { RequiereModulo } from '../auth/modulo.decorator.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,7 +21,8 @@ const avatarStorage = diskStorage({
 });
 
 @Controller('usuarios')
-@UseGuards(AdminGuard)
+@UseGuards(AuthGuard, ModuloGuard)
+@RequiereModulo('usuarios')
 export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 

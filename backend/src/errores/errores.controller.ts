@@ -3,14 +3,17 @@ import { ErroresService, Error, CreateErrorDto, UpdateErrorDto } from "./errores
 import { AuthGuard } from '../auth/auth.guard.js';
 import { PermisoGuard } from '../auth/permiso.guard.js';
 import { RequierePermiso } from '../auth/permiso.decorator.js';
+import { ModuloGuard } from '../auth/modulo.guard.js';
+import { RequiereModulo } from '../auth/modulo.decorator.js';
 
-// @UseGuards a nivel de controller: todas las rutas requieren login
-// pero los GET los dejamos publicos para que cualquiera pueda consultar
+// Todas las rutas requieren login + acceso al modulo 'errores'
 @Controller('errores')
+@UseGuards(AuthGuard, ModuloGuard)
+@RequiereModulo('errores')
 export class ErroresController {
     constructor(private readonly erroresService: ErroresService) {}
 
-    // GET publico: cualquiera puede ver los errores
+    // GET: requiere login y acceso al modulo errores
     @Get()
     findAll(
         @Query('modulo') modulo?: string,

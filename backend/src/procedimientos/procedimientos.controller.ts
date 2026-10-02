@@ -3,10 +3,14 @@ import { ProcedimientosService, Procedimiento, CreateProcedimientoDto, UpdatePro
 import { AuthGuard } from '../auth/auth.guard.js';
 import { PermisoGuard } from '../auth/permiso.guard.js';
 import { RequierePermiso } from '../auth/permiso.decorator.js';
+import { ModuloGuard } from '../auth/modulo.guard.js';
+import { RequiereModulo } from '../auth/modulo.decorator.js';
 
 // @Controller('procedimientos') le dice a NestJS:
 // "Todas las rutas de esta clase empiezan con /procedimientos"
 @Controller('procedimientos')
+@UseGuards(AuthGuard, ModuloGuard)
+@RequiereModulo('procedimientos')
 export class ProcedimientosController {
   // Inyeccion de dependencias:
   // NestJS automaticamente crea una instancia de ProcedimientosService

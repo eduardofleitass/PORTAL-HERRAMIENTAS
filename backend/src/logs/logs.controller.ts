@@ -1,9 +1,12 @@
 import { Controller, Get, Delete, UseGuards } from '@nestjs/common';
 import { LogsService } from './logs.service.js';
 import { AuthGuard } from '../auth/auth.guard.js';
+import { ModuloGuard } from '../auth/modulo.guard.js';
+import { RequiereModulo } from '../auth/modulo.decorator.js';
 
 @Controller('logs')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, ModuloGuard)
+@RequiereModulo('actividad')
 export class LogsController {
   constructor(private readonly logsService: LogsService) {}
 
