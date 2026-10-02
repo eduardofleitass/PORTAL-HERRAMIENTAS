@@ -25,6 +25,9 @@ Electron / empaquetado
 dist-electron/
 dist-electron_temp/
 
+# Respaldos locales generados por deploy/backup.sh
+backups/
+
 # Auditoria responsive (screenshots generados)
 frontend/tests/responsive-audit/*.png
 frontend/tests/light-audit/*.png

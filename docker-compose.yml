@@ -1,0 +1,61 @@
+# ============================================================
+# Portal de Herramientas - Despliegue con Docker Compose
+# ============================================================
+# Uso:
+#   1. Copiar .env.example a .env y completar JWT_SECRET
+#   2. docker compose up -d --build
+#   3. Ver logs:  docker compose logs -f
+#
+# Los datos y las subidas viven en volumenes, asi que sobreviven a
+# reconstrucciones de la imagen y a reinicios.
+# ============================================================
+
+services:
+  portal:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: portal-herramientas:latest
+    container_name: portal-herramientas
+    restart: unless-stopped
+
+    ports:
+      - "${PORT_EXTERNO:-3001}:3001"
+
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      # Obligatorio en produccion: minimo 32 caracteres
+      JWT_SECRET: ${JWT_SECRET:?Debes definir JWT_SECRET en el archivo .env}
+      # Ventana de inactividad de la sesion
+      TOKEN_TTL: ${TOKEN_TTL:-3m}
+      # Rate limiting del login
+      LOGIN_MAX_INTENTOS: ${LOGIN_MAX_INTENTOS:-5}
+      LOGIN_VENTANA_SEG: ${LOGIN_VENTANA_SEG:-60}
+      # Dominios permitidos (vacio = solo mismo origen, que es lo normal aqui)
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+
+    volumes:
+      # Datos persistentes: usuarios, procedimientos, errores, logs
+      - portal-data:/app/backend/data
+      # Archivos subidos: avatares y documentos
+      - portal-uploads:/app/backend/uploads
+
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3001/configuracion').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+    # Limites de recursos (ajustar segun el servidor)
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+volumes:
+  portal-data:
+    driver: local
+  portal-uploads:
+    driver: local

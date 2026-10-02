@@ -1,0 +1,38 @@
+# Dependencias (se reinstalan dentro de la imagen)
+node_modules
+**/node_modules
+
+# Artefactos de build (se generan dentro de la imagen)
+dist
+**/dist
+dist-electron
+
+# Suites E2E: no hacen falta dentro de la imagen
+frontend/tests
+frontend/responsive-audit.cjs
+
+# Credenciales y secretos: nunca dentro de la imagen
+.env
+.env.local
+**/.env
+**/.env.local
+backend/data/.jwt-secret
+
+# Datos mutables: en produccion van en volumenes, no en la imagen
+backend/data/usuarios.json
+backend/data/logs.json
+backend/uploads
+
+# La plantilla de usuarios trae admin/admin en texto plano.
+# Excluirla fuerza a que el contenedor genere una contrasena
+# aleatoria en el primer arranque (mas seguro en produccion).
+backend/data/usuarios.example.json
+
+# Basura de desarrollo
+.git
+.gitignore
+*.log
+.vscode
+.idea
+**/*.tsbuildinfo
+coverage

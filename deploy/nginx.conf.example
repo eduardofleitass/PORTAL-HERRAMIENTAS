@@ -1,0 +1,87 @@
+# ============================================================
+# Portal de Herramientas - Proxy inverso con Nginx
+# ============================================================
+# Sirve el portal por HTTPS con un dominio propio.
+#
+# Supone que el portal corre en el mismo servidor, en el puerto 3001
+# (ver docker-compose.yml o ecosystem.config.cjs).
+#
+# Instalacion:
+#   1. Copiar a /etc/nginx/sites-available/portal
+#   2. Reemplazar portal.miempresa.com por tu dominio
+#   3. ln -s /etc/nginx/sites-available/portal /etc/nginx/sites-enabled/
+#   4. nginx -t && systemctl reload nginx
+#
+# Para el certificado HTTPS (gratis):
+#   sudo certbot --nginx -d portal.miempresa.com
+# ============================================================
+
+# Redirigir todo el trafico HTTP a HTTPS
+server {
+    listen 80;
+    listen [::]:80;
+    server_name portal.miempresa.com;
+
+    # Dejar pasar el desafio de Let's Encrypt
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name portal.miempresa.com;
+
+    # Certificados (generados por certbot)
+    ssl_certificate     /etc/letsencrypt/live/portal.miempresa.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/portal.miempresa.com/privkey.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_ciphers         HIGH:!aNULL:!MD5;
+    ssl_session_cache   shared:SSL:10m;
+
+    # Cabeceras de seguridad
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Strict-Transport-Security "max-age=31536000" always;
+
+    # Tamano maximo de subida (documentos del portal)
+    client_max_body_size 50M;
+
+    # Compresion
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript
+               application/x-javascript text/xml application/xml image/svg+xml;
+    gzip_min_length 1024;
+
+    location / {
+        proxy_pass http://127.0.0.1:3001;
+        proxy_http_version 1.1;
+
+        # Necesario para que el backend vea la IP real del cliente.
+        # El backend confia en este header (trust proxy) para el
+        # rate limiting de login.
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Soporte de subida de archivos
+        proxy_request_buffering off;
+        proxy_read_timeout 120s;
+    }
+
+    # Los assets del frontend llevan hash en el nombre: cache agresivo
+    location /assets/ {
+        proxy_pass http://127.0.0.1:3001;
+        proxy_set_header Host $host;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}

@@ -495,49 +495,111 @@ Levanta backend, frontend y Electron juntos, con recarga automática.
 
 ## Despliegue en producción
 
-### Opción A — Servidor único (recomendado)
+> **Guía detallada: [`deploy/DEPLOY.md`](deploy/DEPLOY.md)** — incluye HTTPS con
+> dominio propio, respaldos, verificación posterior y solución de problemas.
 
-El backend sirve el frontend compilado. Un solo puerto, sin CORS.
+### Antes de empezar: qué necesita la aplicación
+
+A diferencia de una web estática, el portal **necesita un proceso Node
+corriendo**:
+
+| Necesidad | Por qué |
+|---|---|
+| Proceso Node permanente | Es una API NestJS, no archivos HTML sueltos |
+| Disco escribible | Los datos (usuarios, procedimientos, logs) son archivos JSON |
+| Disco para subidas | Los avatares y documentos se guardan en `uploads/` |
+
+Por eso **no sirve un hosting estático** (GitHub Pages, Netlify, Vercel en modo
+estático). Necesitás un servidor: un VPS, una máquina de la oficina, o un
+servicio en la nube que ejecute procesos.
+
+### Método A — Docker Compose (recomendado)
+
+```bash
+# 1. Configurar
+cp .env.example .env
+node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
+# Pegar el resultado en JWT_SECRET dentro de .env
+
+# 2. Construir y arrancar
+docker compose up -d --build
+
+# 3. Obtener la contraseña inicial del admin (se muestra una sola vez)
+docker compose logs portal | grep -A6 "creado usuario admin"
+```
+
+Los datos y las subidas viven en volúmenes (`portal-data`, `portal-uploads`),
+así que sobreviven a reconstrucciones y reinicios. Para actualizar:
+
+```bash
+git pull && docker compose up -d --build
+```
+
+### Método B — PM2 (sin Docker)
 
 ```bash
 # 1. Compilar
-cd backend && npm run build && cd ..
-cd frontend && npm run build && cd ..
+cd backend && npm ci && npm run build && cd ..
+cd frontend && npm ci && npm run build && cd ..
 
-# 2. Configurar el entorno
-cp backend/.env.example backend/.env
-# Editar backend/.env:
-#   JWT_SECRET=<secreto de 32+ caracteres>
-#   NODE_ENV=production
-#   CORS_ORIGINS=<tus dominios, si aplica>
+# 2. Configurar backend/.env (JWT_SECRET y NODE_ENV=production)
 
-# 3. Arrancar
-cd backend
-npm run start:prod
+# 3. Arrancar con PM2
+npm install -g pm2
+pm2 start ecosystem.config.cjs
+pm2 save && pm2 startup     # arranque automático al reiniciar
 ```
 
-Disponible en `http://<servidor>:3001`.
+### Método C — Windows Server
 
-### Opción B — Servicios separados
+Ver [`deploy/DEPLOY.md`](deploy/DEPLOY.md) para el registro como servicio con NSSM.
 
-Frontend en un servidor web (nginx, IIS) y backend aparte.
+### HTTPS
 
-1. Compilar el frontend con la URL del backend:
-   ```bash
-   cd frontend
-   VITE_API_URL=https://api.midominio.com npm run build
-   ```
-2. Publicar el contenido de `frontend/dist/` en el servidor web.
-3. En el backend, definir `CORS_ORIGINS` con el dominio del frontend.
+El portal no debería quedar expuesto por HTTP: el token viaja en cada petición.
+La configuración de nginx en `deploy/nginx.conf.example` incluye el proxy inverso
+y las cabeceras de seguridad. El certificado se obtiene gratis:
 
-### Recomendaciones
+```bash
+sudo certbot --nginx -d portal.midominio.com
+```
 
-- Servir por **HTTPS** mediante un proxy inverso (nginx, Caddy, IIS).
-- Programar **respaldos** periódicos de `backend/data/` y `backend/uploads/`.
-- Definir las variables de entorno en el gestor del servicio, no en un `.env`
-  suelto.
-- Supervisar el proceso (pm2, systemd, NSSM en Windows) para que se reinicie
-  si falla.
+### Respaldos
+
+```bash
+./deploy/backup.sh                 # respaldo a ./backups/
+./deploy/backup.sh /ruta/destino   # respaldo a otra ruta
+```
+
+Programar con cron (diario a las 3:00):
+
+```
+0 3 * * * /ruta/PORTAL_DE_HERRAMIENTAS/deploy/backup.sh >> /var/log/portal-backup.log 2>&1
+```
+
+Conserva los últimos 30 respaldos y borra los más antiguos automáticamente.
+
+### Checklist posterior al despliegue
+
+- [ ] El portal carga por HTTPS
+- [ ] El login funciona y la sesión se mantiene mientras se usa
+- [ ] La contraseña del admin fue cambiada desde Perfil
+- [ ] Los usuarios del equipo están creados con sus permisos
+- [ ] Los datos están en un volumen (no dentro de la imagen)
+- [ ] Hay un respaldo programado de `data` y `uploads`
+- [ ] El servicio arranca automáticamente al reiniciar el servidor
+
+### Archivos de despliegue
+
+| Archivo | Para qué |
+|---|---|
+| `Dockerfile` | Imagen de producción (build multi-etapa) |
+| `docker-compose.yml` | Orquestación con volúmenes y healthcheck |
+| `.env.example` | Plantilla de configuración del despliegue |
+| `ecosystem.config.cjs` | Alternativa sin Docker (PM2) |
+| `deploy/DEPLOY.md` | Guía completa paso a paso |
+| `deploy/nginx.conf.example` | Proxy inverso con HTTPS |
+| `deploy/backup.sh` | Respaldo con retención automática |
 
 ---
 
