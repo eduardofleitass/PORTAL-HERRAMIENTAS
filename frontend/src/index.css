@@ -2712,17 +2712,13 @@ tr.usuario-inactivo td {
     width: 260px;
     transform: translateX(-110%);
     opacity: 0;
-  }
-  
-  .sidebar.colapsado {
-    transform: translateX(-110%);
-    opacity: 0;
+    pointer-events: none;
   }
   
   .sidebar.visible-mobile {
     transform: translateX(0);
     opacity: 1;
-    width: 260px;
+    pointer-events: auto;
   }
   
   .sidebar-overlay {
@@ -2740,19 +2736,19 @@ tr.usuario-inactivo td {
   
   .main-content {
     margin-left: 0 !important;
-    padding-top: 3.5rem;
+    padding-top: 4.5rem;
   }
   
   .main-content.main-full {
-    padding-top: 3.5rem;
+    padding-top: 4.5rem;
   }
   
   .sidebar-toggle-btn {
-    display: none;
+    display: none !important;
   }
   
   .sidebar-tab {
-    display: none;
+    display: none !important;
   }
 }
 
