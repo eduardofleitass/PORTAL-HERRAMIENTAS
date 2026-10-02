@@ -47,6 +47,41 @@ node responsive-audit.cjs
 
 Recorre 8 pantallas x 4 viewports, detecta overflow horizontal y genera screenshots en `responsive-audit/`.
 
+
+### `regression-sesion.cjs` — Sesion deslizante (13 checks)
+
+```bash
+node regression-sesion.cjs
+```
+
+Valida el comportamiento de expiracion de sesion por inactividad.
+
+Cubre:
+- **API /auth/refresh**: funciona con token valido, 401 sin token, 401 con token invalido, extiende el `exp`
+- **Actividad continua > 3 min**: NO expulsa navegando por modulos; el token se renueva
+- **Inactividad real >= 3 min**: SI expulsa con mensaje de inactividad
+- **Actividad reciente (30s)**: NO expulsa
+
+**Duracion: ~5 min** (incluye una espera real de 3+ min de navegacion simulada).
+
+---
+
+## Modelo de sesion
+
+El portal usa **sesion deslizante** (sliding session), no un tope fijo:
+
+| Mecanismo | Valor | Que hace |
+|---|---|---|
+| `INACTIVIDAD_MS` | 3 min | Cierra sesion si no hay actividad en NINGUNA pestana |
+| `RENOVACION_MS` | 1 min | Renueva el JWT mientras haya actividad |
+| `TOKEN_TTL` (backend) | 3 min | Ventana del token; se renueva con la actividad |
+
+La actividad se registra en `localStorage` (`portal-ultima-actividad`), asi que
+varias pestanas comparten el mismo estado: usar una mantiene vivas las demas.
+
+**Importante:** mientras el usuario interactue, la sesion NO expira. Solo expira
+tras 3 minutos reales sin ninguna interaccion (mouse, teclado, scroll, touch).
+
 ## Interpretacion
 
 Cada check imprime `PASS` o `FAIL`. Al final hay un resumen:

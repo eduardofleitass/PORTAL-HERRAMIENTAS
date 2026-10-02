@@ -36,6 +36,18 @@ export class AuthController{
         return this.authService.login(credenciales.username, credenciales.password)
     }
 
+    // POST /auth/refresh - renueva el token (sesion deslizante).
+    // Requiere un token aun valido; extiende la sesion mientras haya actividad.
+    @Post('refresh')
+    refresh(@Req() req: Request) {
+        const authHeader = (req.headers as any)['authorization'];
+        if (!authHeader) {
+            throw new UnauthorizedException('Token requerido');
+        }
+        const token = authHeader.replace('Bearer ', '');
+        return this.authService.refresh(token);
+    }
+
     // GET /auth/me - devuelve datos del usuario logueado (incluye avatar actualizado)
     @Get('me')
     getMe(@Req() req: Request) {

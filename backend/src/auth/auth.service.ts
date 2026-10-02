@@ -21,6 +21,13 @@ export interface Usuario {
 
 const BCRYPT_ROUNDS = 10;
 
+/**
+ * Duracion del token JWT. Con sesion deslizante este valor actua como
+ * "ventana de inactividad": mientras el usuario haga peticiones, el token
+ * se renueva; si deja de pedir por TOKEN_TTL, la sesion muere.
+ */
+export const TOKEN_TTL = '3m';
+
 @Injectable()
 export class AuthService {
   private readonly dataPath: string;
@@ -128,9 +135,40 @@ export class AuthService {
       username: usuario.username,
       rol: usuario.rol,
     };
-    const token = jwt.sign(payload, this.jwtSecret, { expiresIn: '3m' });
+    const token = jwt.sign(payload, this.jwtSecret, { expiresIn: TOKEN_TTL });
     const { password: _, ...usuarioSinPassword } = usuario;
     return { token, usuario: usuarioSinPassword };
+  }
+
+  /**
+   * Renueva el token a partir de uno valido (aun no vencido).
+   * Se usa para sesion deslizante: mientras el usuario este activo,
+   * el token se renueva y nunca expira por tiempo absoluto.
+   */
+  refresh(token: string): { token: string; usuario: Omit<Usuario, 'password'> } {
+    let decoded: { sub: number; username: string; rol: string };
+    try {
+      decoded = this.verifyToken(token);
+    } catch {
+      throw new UnauthorizedException('Sesion expirada. Inicie sesion nuevamente.');
+    }
+
+    const usuario = this.findByUsername(decoded.username);
+    if (!usuario) {
+      throw new UnauthorizedException('Usuario no encontrado');
+    }
+    if (usuario.activo === false) {
+      throw new UnauthorizedException('Usuario inhabilitado');
+    }
+
+    const payload = {
+      sub: usuario.id,
+      username: usuario.username,
+      rol: usuario.rol,
+    };
+    const nuevoToken = jwt.sign(payload, this.jwtSecret, { expiresIn: TOKEN_TTL });
+    const { password: _, ...usuarioSinPassword } = usuario;
+    return { token: nuevoToken, usuario: usuarioSinPassword };
   }
 
   verifyToken(token: string): {

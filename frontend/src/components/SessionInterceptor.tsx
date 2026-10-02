@@ -1,6 +1,23 @@
 import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 
+const INACTIVIDAD_MS = 3 * 60 * 1000;
+const ACTIVIDAD_KEY = "portal-ultima-actividad";
+
+/**
+ * Mensaje de cierre segun la causa real:
+ * - Si el usuario estuvo inactivo >= 3 min, fue inactividad.
+ * - Si estuvo activo (o hay actividad reciente), fue expiracion del servidor.
+ */
+function mensajeSegunCausa(): string {
+  const raw = localStorage.getItem(ACTIVIDAD_KEY);
+  const ultima = raw ? Number(raw) : NaN;
+  const inactivo = Number.isFinite(ultima) ? Date.now() - ultima : Infinity;
+  return inactivo >= INACTIVIDAD_MS
+    ? "Sesion cerrada por inactividad. Inicie sesion nuevamente."
+    : "Sesion expirada. Inicie sesion nuevamente.";
+}
+
 function SessionInterceptor() {
   const { logoutWithMessage } = useAuth();
 
@@ -17,17 +34,19 @@ function SessionInterceptor() {
         url = args[0].url;
       }
 
-      // Ignorar 401 del login para no duplicar mensaje con Login.tsx
-      if (response.status === 401 && !url.includes("/auth/login")) {
+      // Ignorar 401 del login/refresh para no duplicar mensajes:
+      //  - login: lo maneja Login.tsx
+      //  - refresh: si falla, el timer de inactividad decide el mensaje
+      const esLogin = url.includes("/auth/login");
+      const esRefresh = url.includes("/auth/refresh");
+
+      if (response.status === 401 && !esLogin && !esRefresh) {
         try {
           const cloned = response.clone();
           const data = await cloned.json();
           if (data.message === "Usuario inhabilitado") {
             window.dispatchEvent(new CustomEvent("auth:usuario-inhabilitado"));
-          } else if (data.message?.includes("expirada") || data.message?.includes("expirado")) {
-            window.dispatchEvent(new CustomEvent("auth:sesion-expirada"));
           } else {
-            // Cualquier otro 401 tambien cierra sesion
             window.dispatchEvent(new CustomEvent("auth:sesion-expirada"));
           }
         } catch {
@@ -48,7 +67,7 @@ function SessionInterceptor() {
       logoutWithMessage("Usuario inhabilitado");
     }
     function onExpirada() {
-      logoutWithMessage("Sesion expirada. Inicie sesion nuevamente.");
+      logoutWithMessage(mensajeSegunCausa());
     }
     window.addEventListener("auth:usuario-inhabilitado", onInhabilitado);
     window.addEventListener("auth:sesion-expirada", onExpirada);
