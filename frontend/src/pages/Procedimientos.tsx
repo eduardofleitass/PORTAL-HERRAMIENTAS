@@ -187,11 +187,16 @@ function Procedimientos() {
   }
 
   function exportarCSV() {
-    const headers = ["ID", "Titulo", "Modulo", "Nivel", "Tiempo Estimado"];
+    const headers = ["ID", "Titulo", "Modulo", "Nivel", "Tiempo Estimado", "Pasos"];
     const rows = filtrados.map((p) => [
-      p.id, `"${p.titulo.replace(/"/g, '""')}"`, p.modulo, p.nivel, p.tiempo_estimado
+      p.id,
+      `"${(p.titulo || "").replace(/"/g, '""')}"`,
+      `"${(p.modulo || "").replace(/"/g, '""')}"`,
+      `"${(p.nivel || "").replace(/"/g, '""')}"`,
+      `"${(p.tiempo_estimado || "").replace(/"/g, '""')}"`,
+      `"${(p.pasos || []).map((paso) => `${paso.orden}. ${paso.descripcion}`).join(" | ").replace(/"/g, '""')}"`,
     ]);
-    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const csv = "\uFEFF" + [headers.join(";"), ...rows.map((r) => r.join(";"))].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

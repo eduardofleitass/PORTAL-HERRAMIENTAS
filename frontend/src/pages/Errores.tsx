@@ -91,12 +91,19 @@ function Errores() {
   const pag = usePagination(ord.itemsOrdenados, { porPagina: 8, reiniciarEn: `${moduloFiltro}|${frecuenciaFiltro}|${busqueda}|${ord.campo}|${ord.dir}` });
 
   function exportarCSV() {
-    const headers = ["ID", "Codigo", "Titulo", "Modulo", "Frecuencia", "Tags"];
+    const headers = ["ID", "Codigo", "Titulo", "Modulo", "Frecuencia", "Tags", "Descripcion", "Causa", "Solucion"];
     const rows = filtrados.map((e) => [
-      e.id, `"${e.codigo}"`, `"${e.titulo}"`,
-      e.modulo_afectado, e.frecuencia, `"${(e.tags || []).join(", ")}"`
+      e.id,
+      `"${(e.codigo || "").replace(/"/g, '""')}"`,
+      `"${(e.titulo || "").replace(/"/g, '""')}"`,
+      `"${(e.modulo_afectado || "").replace(/"/g, '""')}"`,
+      `"${(e.frecuencia || "").replace(/"/g, '""')}"`,
+      `"${(e.tags || []).join(", ").replace(/"/g, '""')}"`,
+      `"${(e.descripcion || "").replace(/"/g, '""')}"`,
+      `"${(e.causa || "").replace(/"/g, '""')}"`,
+      `"${(e.solucion || "").replace(/"/g, '""')}"`,
     ]);
-    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const csv = "\uFEFF" + [headers.join(";"), ...rows.map((r) => r.join(";"))].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
