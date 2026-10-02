@@ -495,8 +495,11 @@ Levanta backend, frontend y Electron juntos, con recarga automática.
 
 ## Despliegue en producción
 
-> **Guía detallada: [`deploy/DEPLOY.md`](deploy/DEPLOY.md)** — incluye HTTPS con
-> dominio propio, respaldos, verificación posterior y solución de problemas.
+> **Windows, sin costo:** [`deploy/windows/DESPLIEGUE-WINDOWS.md`](deploy/windows/DESPLIEGUE-WINDOWS.md)
+> — dejar el portal corriendo en una PC de la oficina con servicio de Windows.
+>
+> **Servidor con dominio y HTTPS:** [`deploy/DEPLOY.md`](deploy/DEPLOY.md)
+> — Docker Compose, PM2 o NSSM.
 
 ### Antes de empezar: qué necesita la aplicación
 
@@ -599,7 +602,13 @@ Conserva los últimos 30 respaldos y borra los más antiguos automáticamente.
 | `ecosystem.config.cjs` | Alternativa sin Docker (PM2) |
 | `deploy/DEPLOY.md` | Guía completa paso a paso |
 | `deploy/nginx.conf.example` | Proxy inverso con HTTPS |
-| `deploy/backup.sh` | Respaldo con retención automática |
+| `deploy/backup.sh` | Respaldo con retención automática (Linux/macOS) |
+| `deploy/windows/build.ps1` | Compila y configura todo en Windows |
+| `deploy/windows/instalar-servicio.ps1` | Registra el portal como servicio de Windows |
+| `deploy/windows/abrir-firewall.ps1` | Permite el acceso desde la red local |
+| `deploy/windows/iniciar-portal.bat` | Arranque manual (para probar) |
+| `deploy/windows/backup.ps1` | Respaldo con retención automática (Windows) |
+| `deploy/windows/DESPLIEGUE-WINDOWS.md` | Guía completa para Windows |
 
 ---
 

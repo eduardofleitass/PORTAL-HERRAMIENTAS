@@ -1,20 +1,24 @@
 /**
  * Configuracion de la API del backend.
  *
- * El objetivo es que la misma build del frontend funcione en tres escenarios:
+ * El objetivo es que la misma build del frontend funcione en todos los
+ * escenarios de despliegue:
  *
- *  1. Desarrollo con Vite (localhost:5174)  -> backend en localhost:3001
- *  2. Electron empaquetado (file://)        -> backend en localhost:3001
- *  3. Desplegado como estatico en el mismo servidor -> mismo origen (relativo)
+ *  1. Desarrollo con Vite        -> backend en localhost:3001 (puerto aparte)
+ *  2. Electron empaquetado       -> backend en localhost:3001 (protocolo file://)
+ *  3. Servidor / red local       -> mismo origen (el backend sirve el frontend)
+ *  4. Backend en otro dominio    -> VITE_API_URL en build time
  *
  * Orden de resolucion:
- *  1. `VITE_API_URL` en build time  -> gana siempre si esta definida
- *  2. Si la pagina se sirve por http/https (no file://): usar el MISMO origen
- *     (el backend sirve el frontend en produccion, asi que no hace falta host)
- *  3. Fallback: localhost:3001 (desarrollo y Electron)
+ *  1. `VITE_API_URL` si esta definida (gana siempre)
+ *  2. Si corremos en el servidor de desarrollo de Vite (`import.meta.env.DEV`),
+ *     el backend esta en otro puerto de la misma maquina -> localhost:3001
+ *  3. Si la pagina se sirve por http/https, el backend sirve el frontend
+ *     -> mismo origen (vale para localhost, 192.168.x.x o un dominio)
+ *  4. Fallback (Electron con file://): localhost:3001
  */
 
-/** Puerto por defecto del backend en desarrollo / Electron */
+/** Puerto por defecto del backend en desarrollo y Electron */
 const PUERTO_LOCAL = '3001';
 
 /** Origen del backend en desarrollo o Electron */
@@ -29,18 +33,24 @@ function resolverApiUrl(): string {
     return desdeEnv.trim().replace(/\/+$/, '');
   }
 
-  // 2. Servido desde un servidor web (no file:// ni about:)
-  //    El backend sirve el frontend, asi que el mismo origen alcanza.
+  // 2. Servidor de desarrollo de Vite: el frontend corre en 5173+ y el
+  //    backend aparte en 3001. Se detecta con la bandera de Vite, no
+  //    adivinando el puerto (que puede variar si esta ocupado).
+  if (import.meta.env?.DEV) {
+    return origenLocal();
+  }
+
+  // 3. Servido por http/https: el backend sirve el frontend compilado,
+  //    asi que el mismo origen es la respuesta correcta. Funciona igual
+  //    en localhost, en una IP de red local o en un dominio con HTTPS.
   if (typeof window !== 'undefined') {
     const { protocol, origin } = window.location;
-    if ((protocol === 'http:' || protocol === 'https:') && origin && !origin.includes(':5174')) {
-      // En dev el frontend corre en Vite (5174) y el backend aparte,
-      // por eso excluimos ese puerto para caer al fallback.
+    if ((protocol === 'http:' || protocol === 'https:') && origin) {
       return origin;
     }
   }
 
-  // 3. Desarrollo (Vite) o Electron (file://)
+  // 4. Electron empaquetado (file://) o cualquier otro caso
   return origenLocal();
 }
 

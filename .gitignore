@@ -31,3 +31,4 @@ backups/
 # Auditoria responsive (screenshots generados)
 frontend/tests/responsive-audit/*.png
 frontend/tests/light-audit/*.png
+frontend/tests/*.png
