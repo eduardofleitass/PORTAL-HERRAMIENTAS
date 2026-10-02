@@ -8,11 +8,17 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (usuario.rol !== "admin") {
-    return <Navigate to="/" replace />;
+  // Admins tienen acceso total
+  if (usuario.rol === "admin") {
+    return children;
   }
 
-  return children;
+  // Usuarios con permiso explicito en modulo usuarios
+  if (usuario.permisos?.modulos?.usuarios === true) {
+    return children;
+  }
+
+  return <Navigate to="/" replace />;
 }
 
 export default AdminRoute;
