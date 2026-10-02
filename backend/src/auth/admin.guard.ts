@@ -14,13 +14,21 @@ export class AdminGuard implements CanActivate {
     }
 
     const token = authHeader.replace('Bearer ', '');
-    const decoded = this.authService.verifyToken(token);
 
-    if (decoded.rol !== 'admin') {
-      throw new ForbiddenException('Solo administradores pueden acceder a este recurso');
+    try {
+      const decoded = this.authService.verifyToken(token);
+
+      if (decoded.rol !== 'admin') {
+        throw new ForbiddenException('Solo administradores pueden acceder a este recurso');
+      }
+
+      request.user = decoded;
+      return true;
+    } catch (err: any) {
+      if (err.name === 'TokenExpiredError' || err.message?.includes('expired')) {
+        throw new UnauthorizedException('Sesion expirada. Inicie sesion nuevamente.');
+      }
+      throw new UnauthorizedException('Token invalido');
     }
-
-    request.user = decoded;
-    return true;
   }
 }

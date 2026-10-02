@@ -24,8 +24,15 @@ function SessionInterceptor() {
           const data = await cloned.json();
           if (data.message === "Usuario inhabilitado") {
             window.dispatchEvent(new CustomEvent("auth:usuario-inhabilitado"));
+          } else if (data.message?.includes("expirada") || data.message?.includes("expirado")) {
+            window.dispatchEvent(new CustomEvent("auth:sesion-expirada"));
+          } else {
+            // Cualquier otro 401 tambien cierra sesion
+            window.dispatchEvent(new CustomEvent("auth:sesion-expirada"));
           }
-        } catch {}
+        } catch {
+          window.dispatchEvent(new CustomEvent("auth:sesion-expirada"));
+        }
       }
 
       return response;
@@ -40,8 +47,15 @@ function SessionInterceptor() {
     function onInhabilitado() {
       logoutWithMessage("Usuario inhabilitado");
     }
+    function onExpirada() {
+      logoutWithMessage("Sesion expirada. Inicie sesion nuevamente.");
+    }
     window.addEventListener("auth:usuario-inhabilitado", onInhabilitado);
-    return () => window.removeEventListener("auth:usuario-inhabilitado", onInhabilitado);
+    window.addEventListener("auth:sesion-expirada", onExpirada);
+    return () => {
+      window.removeEventListener("auth:usuario-inhabilitado", onInhabilitado);
+      window.removeEventListener("auth:sesion-expirada", onExpirada);
+    };
   }, [logoutWithMessage]);
 
   return null;

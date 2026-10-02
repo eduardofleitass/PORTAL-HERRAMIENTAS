@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 
 export interface Permisos {
   modulos: {
@@ -25,6 +25,15 @@ export interface Usuario {
   rol: string;
   avatar?: string;
   permisos?: Permisos;
+}
+
+/** Decodifica el payload de un JWT sin verificar firma */
+function decodeJWT(token: string): { exp?: number } | null {
+  try {
+    const base64 = token.split(".")[1];
+    const json = atob(base64.replace(/-/g, "+").replace(/_/g, "/"));
+    return JSON.parse(json);
+  } catch { return null; }
 }
 
 interface AuthContextType {
@@ -78,6 +87,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("usuario", JSON.stringify(usuario));
     setUsuario(usuario);
   }
+
+  // Verificar expiracion del token cada 60 segundos
+  useEffect(() => {
+    if (!token) return;
+    const payload = decodeJWT(token);
+    if (!payload?.exp) return;
+
+    const expMs = payload.exp * 1000;
+
+    function checkExpired() {
+      if (Date.now() >= expMs) {
+        logoutWithMessage("Sesion expirada. Inicie sesion nuevamente.");
+      }
+    }
+
+    checkExpired(); // verificar inmediatamente
+    const interval = setInterval(checkExpired, 60000); // cada 60s
+    return () => clearInterval(interval);
+  }, [token]);
 
   return (
     <AuthContext.Provider value={{ usuario, token, login, logout, logoutWithMessage, updateUser, logoutMessage }}>
