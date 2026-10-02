@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { usePermisos, puedeRealizarAccion } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { useNotificaciones } from "../context/NotificationContext";
-import { Trash2, RotateCcw, Pencil, Eye, X, Printer, Download } from "lucide-react";
+import { Trash2, RotateCcw, Pencil, Eye, X, Printer } from "lucide-react";
 import { exportarPDFDocumentacion } from "../utils/exportPDF";
 import ConfirmModal from "../components/ConfirmModal";
 import Pagination from "../components/Pagination";
@@ -136,27 +136,6 @@ function Documentacion() {
     setSeleccionado(null);
   }
 
-  function exportarCSV() {
-    const headers = ["ID", "Titulo", "Descripcion", "Seccion", "Archivo", "Tamano (KB)", "Fecha"];
-    const rows = filtrados.map((d) => [
-      d.id,
-      `"${(d.titulo || "").replace(/"/g, '""')}"`,
-      `"${(d.descripcion || "").replace(/"/g, '""')}"`,
-      `"${(d.seccion || "").replace(/"/g, '""')}"`,
-      `"${(d.nombreArchivo || "").replace(/"/g, '""')}"`,
-      (d.tamano / 1024).toFixed(1),
-      d.fechaSubida ? new Date(d.fechaSubida).toLocaleDateString() : "",
-    ]);
-    const csv = [headers.join(";"), ...rows.map((r) => r.join(";"))].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `documentacion-${new Date().toISOString().split("T")[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }
 
   function cerrarEdicion() {
     setEditandoDoc(null);
@@ -262,11 +241,6 @@ function Documentacion() {
             {puedeRealizarAccion(permisos, "exportarPDF") && (
               <button className="btn-exportar" onClick={() => exportarPDFDocumentacion(filtrados)} title="Exportar PDF">
                 <Printer size={14} /> PDF
-              </button>
-            )}
-            {puedeRealizarAccion(permisos, "exportarCSV") && (
-              <button className="btn-exportar" onClick={exportarCSV} title="Exportar CSV">
-                <Download size={14} /> Exportar
               </button>
             )}
             {!loading && !error && (

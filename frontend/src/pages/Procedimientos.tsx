@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "../context/ToastContext";
 import { useNotificaciones } from "../context/NotificationContext";
 import { usePermisos, puedeRealizarAccion } from "../context/AuthContext";
-import { Pencil, Trash2, RotateCcw, Printer, Search, Download } from "lucide-react";
+import { Pencil, Trash2, RotateCcw, Printer, Search } from "lucide-react";
 import { exportarPDFProcedimientos } from "../utils/exportPDF";
 import ConfirmModal from "../components/ConfirmModal";
 import Pagination from "../components/Pagination";
@@ -186,26 +186,6 @@ function Procedimientos() {
     setMostrarFormulario(false); setEditandoId(null); setErrorGuardar("");
   }
 
-  function exportarCSV() {
-    const headers = ["ID", "Titulo", "Modulo", "Nivel", "Tiempo Estimado", "Pasos"];
-    const rows = filtrados.map((p) => [
-      p.id,
-      `"${(p.titulo || "").replace(/"/g, '""')}"`,
-      `"${(p.modulo || "").replace(/"/g, '""')}"`,
-      `"${(p.nivel || "").replace(/"/g, '""')}"`,
-      `"${(p.tiempo_estimado || "").replace(/"/g, '""')}"`,
-      `"${(p.pasos || []).map((paso) => `${paso.orden}. ${paso.descripcion}`).join(" | ").replace(/"/g, '""')}"`,
-    ]);
-    const csv = "\uFEFF" + [headers.join(";"), ...rows.map((r) => r.join(";"))].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `procedimientos-${new Date().toISOString().split("T")[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }
 
   return (
     <>
@@ -276,11 +256,6 @@ function Procedimientos() {
               {puedeRealizarAccion(permisos, "exportarPDF") && (
                 <button className="btn-exportar" onClick={() => exportarPDFProcedimientos(procedimientos)} title="Imprimir / Exportar PDF">
                   <Printer size={14} /> PDF
-                </button>
-              )}
-              {puedeRealizarAccion(permisos, "exportarCSV") && (
-                <button className="btn-exportar" onClick={exportarCSV} title="Exportar a CSV">
-                  <Download size={14} /> Exportar
                 </button>
               )}
             </div>

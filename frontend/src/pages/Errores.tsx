@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "../context/ToastContext";
 import { useNotificaciones } from "../context/NotificationContext";
 import { usePermisos, puedeRealizarAccion } from "../context/AuthContext";
-import { Pencil, Trash2, RotateCcw, Printer, Search, Download } from "lucide-react";
+import { Pencil, Trash2, RotateCcw, Printer, Search } from "lucide-react";
 import { exportarPDFFerrores } from "../utils/exportPDF";
 import ConfirmModal from "../components/ConfirmModal";
 import Pagination from "../components/Pagination";
@@ -90,29 +90,6 @@ function Errores() {
   const ord = useSort(filtrados, "codigo");
   const pag = usePagination(ord.itemsOrdenados, { porPagina: 8, reiniciarEn: `${moduloFiltro}|${frecuenciaFiltro}|${busqueda}|${ord.campo}|${ord.dir}` });
 
-  function exportarCSV() {
-    const headers = ["ID", "Codigo", "Titulo", "Modulo", "Frecuencia", "Tags", "Descripcion", "Causa", "Solucion"];
-    const rows = filtrados.map((e) => [
-      e.id,
-      `"${(e.codigo || "").replace(/"/g, '""')}"`,
-      `"${(e.titulo || "").replace(/"/g, '""')}"`,
-      `"${(e.modulo_afectado || "").replace(/"/g, '""')}"`,
-      `"${(e.frecuencia || "").replace(/"/g, '""')}"`,
-      `"${(e.tags || []).join(", ").replace(/"/g, '""')}"`,
-      `"${(e.descripcion || "").replace(/"/g, '""')}"`,
-      `"${(e.causa || "").replace(/"/g, '""')}"`,
-      `"${(e.solucion || "").replace(/"/g, '""')}"`,
-    ]);
-    const csv = "\uFEFF" + [headers.join(";"), ...rows.map((r) => r.join(";"))].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `errores-${new Date().toISOString().split("T")[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }
 
   function cerrarFormulario() {
     setNuevoCodigo(""); setNuevoTitulo(""); setNuevaDescripcion("");
@@ -276,9 +253,6 @@ function Errores() {
               
               {puedeRealizarAccion(permisos, "exportarPDF") && <button className="btn-exportar" onClick={() => exportarPDFFerrores(errores)} title="Imprimir / Exportar PDF">
                 <Printer size={14} /> PDF
-              </button>}
-              {puedeRealizarAccion(permisos, "exportarCSV") && <button className="btn-exportar" onClick={exportarCSV} title="Exportar a CSV">
-                <Download size={14} /> Exportar
               </button>}
             </div>
             <OrdenSelector
