@@ -61,4 +61,31 @@ async function bootstrap() {
   await app.listen(CONFIG.puerto);
 }
 
-await bootstrap();
+// Arranque con mensaje claro si el puerto ya esta ocupado.
+// Sin esto, Node imprime un volcado de 30 lineas que no ayuda a nadie.
+try {
+  await bootstrap();
+} catch (err: any) {
+  if (err?.code === 'EADDRINUSE') {
+    const puerto = CONFIG.puerto;
+    console.error('\n============================================================');
+    console.error(`[error] El puerto ${puerto} ya esta en uso.`);
+    console.error('============================================================');
+    console.error('Hay otro proceso usando ese puerto. Causas habituales:');
+    console.error('  - El servicio de Windows "PortalHerramientas" ya esta corriendo');
+    console.error('  - Otra consola con el portal abierto');
+    console.error('  - Una instancia anterior que quedo viva');
+    console.error('');
+    console.error('Si el portal ya funciona, no hace falta arrancarlo de nuevo.');
+    console.error('Para ver quien ocupa el puerto:');
+    console.error(`  netstat -ano | findstr ":${puerto}" | findstr LISTENING`);
+    console.error('Para cerrarlo (reemplazar PID por el numero que muestra):');
+    console.error('  taskkill /F /PID <PID>');
+    console.error('');
+    console.error('Para usar otro puerto, defini PORT en backend/.env');
+    console.error('============================================================\n');
+    process.exit(1);
+  }
+  console.error('[error] No se pudo arrancar el servidor:', err);
+  process.exit(1);
+}
