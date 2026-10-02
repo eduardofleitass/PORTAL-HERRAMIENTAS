@@ -40,22 +40,50 @@ interface Resumen {
 }
 
 const NOMBRES_ACCION: Record<string, string> = {
+  // Sesion
   login: "Inicio de sesion",
+  login_fallido: "Login fallido",
   logout: "Cierre de sesion",
+  crear_sesion: "Sesion creada",
+  crear_sesion_fallido: "Creacion de sesion fallida",
+  cerrar_sesion: "Cierre de sesion",
+
+  // Procedimientos
   procedimiento_creado: "Procedimiento creado",
   procedimiento_actualizado: "Procedimiento actualizado",
   procedimiento_eliminado: "Procedimiento eliminado",
+  crear_procedimiento: "Procedimiento creado",
+  editar_procedimiento: "Procedimiento editado",
+  eliminar_procedimiento: "Procedimiento eliminado",
+
+  // Errores
   error_creado: "Error registrado",
   error_actualizado: "Error actualizado",
   error_eliminado: "Error eliminado",
+  crear_error: "Error registrado",
+  editar_error: "Error editado",
+  eliminar_error: "Error eliminado",
+
+  // Documentos
   documento_subido: "Documento subido",
   documento_actualizado: "Documento actualizado",
   documento_eliminado: "Documento eliminado",
+  crear_documento: "Documento subido",
+  crear_documento_fallido: "Subida de documento fallida",
+  editar_documento: "Documento editado",
+  eliminar_documento: "Documento eliminado",
+
+  // Usuarios
   usuario_creado: "Usuario creado",
   usuario_actualizado: "Usuario actualizado",
   usuario_eliminado: "Usuario eliminado",
-  error_frontend: "Error frontend",
-  error_backend: "Error backend",
+  crear_usuario: "Usuario creado",
+  editar_usuario: "Usuario editado",
+  eliminar_usuario: "Usuario eliminado",
+
+  // Errores de la app
+  error_frontend: "Error de interfaz",
+  error_backend: "Error de servidor",
 };
 
 function Logs() {
@@ -67,6 +95,7 @@ function Logs() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [nivelFiltro, setNivelFiltro] = useState("");
+  const [accionFiltro, setAccionFiltro] = useState("");
   const [busqueda, setBusqueda] = useState("");
   const [confirmLimpiar, setConfirmLimpiar] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -177,6 +206,8 @@ function Logs() {
   const filtrados = logs.filter((l) => {
     const coincideNivel = nivelFiltro ? l.nivel === nivelFiltro : true;
     if (!coincideNivel) return false;
+    const coincideAccion = accionFiltro ? l.accion === accionFiltro : true;
+    if (!coincideAccion) return false;
     if (!busqueda.trim()) return true;
     const q = busqueda.toLowerCase();
     return (
@@ -189,8 +220,50 @@ function Logs() {
   const ord = useSort(filtrados, "fecha", "desc");
   const pag = usePagination(ord.itemsOrdenados, {
     porPagina: 15,
-    reiniciarEn: `${nivelFiltro}|${busqueda}|${ord.campo}|${ord.dir}`,
+    reiniciarEn: `${nivelFiltro}|${accionFiltro}|${busqueda}|${ord.campo}|${ord.dir}`,
   });
+
+  /** Conteos por nivel calculados sobre los logs con filtro de accion/busqueda aplicado
+   *  (asi las tarjetas reflejan lo que realmente se puede filtrar) */
+  const conteosNivel = (() => {
+    const base = logs.filter((l) => {
+      const coincideAccion = accionFiltro ? l.accion === accionFiltro : true;
+      if (!coincideAccion) return false;
+      if (!busqueda.trim()) return true;
+      const q = busqueda.toLowerCase();
+      return (
+        l.accion?.toLowerCase().includes(q) ||
+        l.usuario?.toLowerCase().includes(q) ||
+        l.detalle?.toLowerCase().includes(q)
+      );
+    });
+    const c: { info: number; success: number; warning: number; error: number; total: number } = {
+      info: 0, success: 0, warning: 0, error: 0, total: 0,
+    };
+    for (const l of base) {
+      if (l.nivel in c) c[l.nivel] += 1;
+    }
+    c.total = base.length;
+    return c;
+  })();
+
+  /** Alterna el filtro de nivel. Click en el mismo valor lo quita. */
+  function alternarNivel(nivel: string) {
+    setNivelFiltro((prev) => (prev === nivel ? "" : nivel));
+  }
+
+  /** Alterna el filtro por tipo de accion. Click en el mismo chip lo quita. */
+  function alternarAccion(accion: string) {
+    setAccionFiltro((prev) => (prev === accion ? "" : accion));
+  }
+
+  const hayFiltrosActivos = Boolean(nivelFiltro || accionFiltro || busqueda.trim());
+
+  function limpiarFiltros() {
+    setNivelFiltro("");
+    setAccionFiltro("");
+    setBusqueda("");
+  }
 
   const iconoNivel = (nivel: string) => {
     switch (nivel) {
@@ -251,39 +324,77 @@ function Logs() {
 
         {resumen && (
           <div className="logs-resumen">
-            <div className="logs-stat">
-              <span className="logs-stat-valor">{resumen.total}</span>
+            <button
+              className={`logs-stat logs-stat-clickable ${!nivelFiltro ? "logs-stat-activa" : ""}`}
+              onClick={() => alternarNivel("")}
+              title={nivelFiltro ? "Quitar filtro de nivel" : "Ver todos los registros"}
+            >
+              <span className="logs-stat-valor">{conteosNivel.total}</span>
               <span className="logs-stat-label">Registros</span>
-            </div>
-            <div className="logs-stat nivel-info">
-              <span className="logs-stat-valor">{resumen.porNivel.info ?? 0}</span>
+            </button>
+            <button
+              className={`logs-stat logs-stat-clickable nivel-info ${nivelFiltro === "info" ? "logs-stat-activa" : ""}`}
+              onClick={() => alternarNivel("info")}
+              title="Filtrar solo informativos"
+            >
+              <span className="logs-stat-valor">{conteosNivel.info ?? 0}</span>
               <span className="logs-stat-label">Info</span>
-            </div>
-            <div className="logs-stat nivel-success">
-              <span className="logs-stat-valor">{resumen.porNivel.success ?? 0}</span>
+            </button>
+            <button
+              className={`logs-stat logs-stat-clickable nivel-success ${nivelFiltro === "success" ? "logs-stat-activa" : ""}`}
+              onClick={() => alternarNivel("success")}
+              title="Filtrar solo exitos"
+            >
+              <span className="logs-stat-valor">{conteosNivel.success ?? 0}</span>
               <span className="logs-stat-label">Exito</span>
-            </div>
-            <div className="logs-stat nivel-warning">
-              <span className="logs-stat-valor">{resumen.porNivel.warning ?? 0}</span>
+            </button>
+            <button
+              className={`logs-stat logs-stat-clickable nivel-warning ${nivelFiltro === "warning" ? "logs-stat-activa" : ""}`}
+              onClick={() => alternarNivel("warning")}
+              title="Filtrar solo advertencias"
+            >
+              <span className="logs-stat-valor">{conteosNivel.warning ?? 0}</span>
               <span className="logs-stat-label">Advertencias</span>
-            </div>
-            <div className="logs-stat nivel-error">
-              <span className="logs-stat-valor">{resumen.porNivel.error ?? 0}</span>
+            </button>
+            <button
+              className={`logs-stat logs-stat-clickable nivel-error ${nivelFiltro === "error" ? "logs-stat-activa" : ""}`}
+              onClick={() => alternarNivel("error")}
+              title="Filtrar solo errores"
+            >
+              <span className="logs-stat-valor">{conteosNivel.error ?? 0}</span>
               <span className="logs-stat-label">Errores</span>
-            </div>
+            </button>
           </div>
         )}
 
         {filtrados.length > 0 && (
           <div className="logs-acciones-resumen">
-            <div className="logs-acciones-titulo">Actividad reciente</div>
+            <div className="logs-acciones-titulo">
+              Actividad reciente
+              {accionFiltro && (
+                <span className="logs-acciones-subtitulo">
+                  (filtrando: {nombreAccion(accionFiltro)})
+                </span>
+              )}
+            </div>
             <div className="logs-acciones-lista">
-              {resumenPorAccion(filtrados).slice(0, 6).map((item) => (
-                <div key={item.label} className={`logs-accion-chip nivel-${item.nivel}`}>
-                  <span className="logs-accion-chip-label">{item.label}</span>
-                  <span className="logs-accion-chip-count">{item.count}</span>
-                </div>
-              ))}
+              {resumenPorAccion(filtrados).slice(0, 6).map((item) => {
+                const accionKey = Object.keys(NOMBRES_ACCION).find(
+                  (k) => NOMBRES_ACCION[k] === item.label
+                ) || item.label;
+                const activo = accionFiltro === accionKey;
+                return (
+                  <button
+                    key={item.label}
+                    className={`logs-accion-chip nivel-${item.nivel} logs-accion-chip-clickable ${activo ? "logs-accion-chip-activa" : ""}`}
+                    onClick={() => alternarAccion(accionKey)}
+                    title={activo ? "Quitar filtro" : `Filtrar por "${item.label}"`}
+                  >
+                    <span className="logs-accion-chip-label">{item.label}</span>
+                    <span className="logs-accion-chip-count">{item.count}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -305,6 +416,11 @@ function Logs() {
               onChange={(e) => setBusqueda(e.target.value)}
             />
           </div>
+          {hayFiltrosActivos && (
+            <button className="btn-limpiar-filtros" onClick={limpiarFiltros} title="Quitar todos los filtros">
+              <X size={14} /> Limpiar filtros
+            </button>
+          )}
         </div>
 
         <OrdenSelector

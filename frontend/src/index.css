@@ -5219,3 +5219,122 @@ tr.usuario-inactivo td {
 :root[data-theme="light"] .toggle-estado.activo {
   color: #fffdf9;
 }
+
+
+/* ============================================
+   LOGS — TARJETAS DE NIVEL Y CHIPS CLICKEABLES
+   ============================================ */
+
+/* Las tarjetas de nivel ahora son <button>: resetear estilos de boton */
+.logs-stat-clickable {
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+}
+
+.logs-stat-clickable:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+  border-left-color: inherit;
+}
+
+/* Estado activo: borde dorado + anillo suave */
+.logs-stat-clickable.logs-stat-activa {
+  background: var(--bg-card-hover);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 18px var(--accent-glow);
+}
+
+/* Mantener el color semantico del borde izquierdo al activarse */
+.logs-stat-clickable.nivel-info.logs-stat-activa    { box-shadow: 0 0 0 1px var(--accent-cyan),   0 0 18px rgba(122,184,196,0.18); }
+.logs-stat-clickable.nivel-success.logs-stat-activa { box-shadow: 0 0 0 1px var(--accent-green),  0 0 18px rgba(122,184,135,0.18); }
+.logs-stat-clickable.nivel-warning.logs-stat-activa { box-shadow: 0 0 0 1px var(--accent-orange), 0 0 18px rgba(198,170,107,0.18); }
+.logs-stat-clickable.nivel-error.logs-stat-activa   { box-shadow: 0 0 0 1px var(--accent-red),    0 0 18px rgba(201,122,122,0.18); }
+
+/* Valor mas brillante cuando la tarjeta esta activa */
+.logs-stat-clickable.logs-stat-activa .logs-stat-valor {
+  color: var(--accent);
+}
+
+/* Etiqueta "Filtrando por: X" */
+.logs-acciones-subtitulo {
+  margin-left: 0.4rem;
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+/* Chips de actividad clickeables */
+.logs-accion-chip-clickable {
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.logs-accion-chip-clickable:hover {
+  transform: none;
+  filter: brightness(1.15);
+  border-color: var(--border-hover);
+}
+
+.logs-accion-chip-clickable.logs-accion-chip-activa {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.logs-accion-chip-clickable.logs-accion-chip-activa .logs-accion-chip-label {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Boton limpiar filtros */
+.btn-limpiar-filtros {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.8rem;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.btn-limpiar-filtros:hover {
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+  background: rgba(201,122,122,0.08);
+}
+
+/* ---------- Modo claro ---------- */
+:root[data-theme="light"] .logs-stat-clickable:hover {
+  background: linear-gradient(165deg, #ffffff 0%, #fefbf6 100%);
+  border-color: var(--border-hover);
+}
+
+:root[data-theme="light"] .logs-stat-clickable.logs-stat-activa {
+  background: linear-gradient(165deg, #ffffff 0%, #fdf8ee 100%);
+  border-color: var(--accent);
+}
+
+:root[data-theme="light"] .logs-accion-chip-clickable:hover {
+  filter: none;
+  background: #fffdf9;
+}
+
+:root[data-theme="light"] .logs-accion-chip-clickable.logs-accion-chip-activa {
+  background: rgba(201, 150, 94, 0.16);
+  border-color: var(--accent);
+}
+
+:root[data-theme="light"] .btn-limpiar-filtros:hover {
+  background: rgba(163, 74, 68, 0.08);
+}

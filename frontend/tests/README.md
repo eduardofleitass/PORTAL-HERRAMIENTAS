@@ -82,6 +82,41 @@ varias pestanas comparten el mismo estado: usar una mantiene vivas las demas.
 **Importante:** mientras el usuario interactue, la sesion NO expira. Solo expira
 tras 3 minutos reales sin ninguna interaccion (mouse, teclado, scroll, touch).
 
+
+### `regression-logs-filtros.cjs` — Filtros clickeables de Actividad (18 checks)
+
+```bash
+node regression-logs-filtros.cjs
+```
+
+Valida los filtros interactivos de la pagina Actividad.
+
+Cubre:
+- Las 5 tarjetas de nivel son `<button>` clickeables
+- Click en una tarjeta filtra la tabla por ese nivel
+- Click en la misma tarjeta quita el filtro
+- La tarjeta queda marcada visualmente como activa
+- El `<select>` de nivel se sincroniza con el click
+- Los chips de actividad filtran por tipo de accion
+- Indicador "(filtrando: X)" aparece
+- Boton "Limpiar filtros" restaura el total
+
+---
+
+## Modulo Actividad: filtros interactivos
+
+Los contadores de nivel y los chips de tipo de actividad son **clickeables**:
+
+| Elemento | Accion |
+|---|---|
+| Tarjeta "Registros" | Quita el filtro de nivel (ver todo) |
+| Tarjeta Info/Exito/Advertencias/Errores | Filtra solo ese nivel; click de nuevo lo quita |
+| Chip de actividad | Filtra solo ese tipo de accion; click de nuevo lo quita |
+| Boton "Limpiar filtros" | Resetea nivel + accion + busqueda |
+
+Los conteos de las tarjetas se recalculan segun el filtro de accion/busqueda activo,
+asi que siempre reflejan cuantos registros hay disponibles para filtrar.
+
 ## Interpretacion
 
 Cada check imprime `PASS` o `FAIL`. Al final hay un resumen:
