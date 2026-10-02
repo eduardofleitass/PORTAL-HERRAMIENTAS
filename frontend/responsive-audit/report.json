@@ -1,0 +1,290 @@
+[
+  {
+    "viewport": "desktop",
+    "vw": 1440,
+    "page": "01-login",
+    "overflowX": false,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "scrollH": 900
+  },
+  {
+    "viewport": "desktop",
+    "vw": 1440,
+    "page": "02-dashboard",
+    "overflowX": false,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "scrollH": 900
+  },
+  {
+    "viewport": "desktop",
+    "vw": 1440,
+    "page": "03-procedimientos",
+    "overflowX": false,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "scrollH": 901
+  },
+  {
+    "viewport": "desktop",
+    "vw": 1440,
+    "page": "04-errores",
+    "overflowX": false,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "scrollH": 901
+  },
+  {
+    "viewport": "desktop",
+    "vw": 1440,
+    "page": "05-documentacion",
+    "overflowX": false,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "scrollH": 901
+  },
+  {
+    "viewport": "desktop",
+    "vw": 1440,
+    "page": "06-logs",
+    "overflowX": false,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "scrollH": 1222
+  },
+  {
+    "viewport": "desktop",
+    "vw": 1440,
+    "page": "07-usuarios",
+    "overflowX": false,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "scrollH": 900
+  },
+  {
+    "viewport": "desktop",
+    "vw": 1440,
+    "page": "08-perfil",
+    "overflowX": false,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "scrollH": 900
+  },
+  {
+    "viewport": "tablet",
+    "vw": 820,
+    "page": "01-login",
+    "overflowX": false,
+    "scrollW": 820,
+    "clientW": 820,
+    "scrollH": 1228
+  },
+  {
+    "viewport": "tablet",
+    "vw": 820,
+    "page": "02-dashboard",
+    "overflowX": false,
+    "scrollW": 820,
+    "clientW": 820,
+    "scrollH": 1228
+  },
+  {
+    "viewport": "tablet",
+    "vw": 820,
+    "page": "03-procedimientos",
+    "overflowX": false,
+    "scrollW": 820,
+    "clientW": 820,
+    "scrollH": 1180
+  },
+  {
+    "viewport": "tablet",
+    "vw": 820,
+    "page": "04-errores",
+    "overflowX": false,
+    "scrollW": 820,
+    "clientW": 820,
+    "scrollH": 1180
+  },
+  {
+    "viewport": "tablet",
+    "vw": 820,
+    "page": "05-documentacion",
+    "overflowX": false,
+    "scrollW": 820,
+    "clientW": 820,
+    "scrollH": 1180
+  },
+  {
+    "viewport": "tablet",
+    "vw": 820,
+    "page": "06-logs",
+    "overflowX": false,
+    "scrollW": 820,
+    "clientW": 820,
+    "scrollH": 1396
+  },
+  {
+    "viewport": "tablet",
+    "vw": 820,
+    "page": "07-usuarios",
+    "overflowX": false,
+    "scrollW": 820,
+    "clientW": 820,
+    "scrollH": 1180
+  },
+  {
+    "viewport": "tablet",
+    "vw": 820,
+    "page": "08-perfil",
+    "overflowX": false,
+    "scrollW": 820,
+    "clientW": 820,
+    "scrollH": 1180
+  },
+  {
+    "viewport": "mobile",
+    "vw": 390,
+    "page": "01-login",
+    "overflowX": false,
+    "scrollW": 390,
+    "clientW": 390,
+    "scrollH": 1611
+  },
+  {
+    "viewport": "mobile",
+    "vw": 390,
+    "page": "02-dashboard",
+    "overflowX": false,
+    "scrollW": 390,
+    "clientW": 390,
+    "scrollH": 1611
+  },
+  {
+    "viewport": "mobile",
+    "vw": 390,
+    "page": "03-procedimientos",
+    "overflowX": false,
+    "scrollW": 390,
+    "clientW": 390,
+    "scrollH": 844
+  },
+  {
+    "viewport": "mobile",
+    "vw": 390,
+    "page": "04-errores",
+    "overflowX": false,
+    "scrollW": 390,
+    "clientW": 390,
+    "scrollH": 844
+  },
+  {
+    "viewport": "mobile",
+    "vw": 390,
+    "page": "05-documentacion",
+    "overflowX": false,
+    "scrollW": 390,
+    "clientW": 390,
+    "scrollH": 844
+  },
+  {
+    "viewport": "mobile",
+    "vw": 390,
+    "page": "06-logs",
+    "overflowX": false,
+    "scrollW": 390,
+    "clientW": 390,
+    "scrollH": 2355
+  },
+  {
+    "viewport": "mobile",
+    "vw": 390,
+    "page": "07-usuarios",
+    "overflowX": false,
+    "scrollW": 390,
+    "clientW": 390,
+    "scrollH": 844
+  },
+  {
+    "viewport": "mobile",
+    "vw": 390,
+    "page": "08-perfil",
+    "overflowX": false,
+    "scrollW": 390,
+    "clientW": 390,
+    "scrollH": 844
+  },
+  {
+    "viewport": "mobile-sm",
+    "vw": 320,
+    "page": "01-login",
+    "overflowX": false,
+    "scrollW": 320,
+    "clientW": 320,
+    "scrollH": 1652
+  },
+  {
+    "viewport": "mobile-sm",
+    "vw": 320,
+    "page": "02-dashboard",
+    "overflowX": false,
+    "scrollW": 320,
+    "clientW": 320,
+    "scrollH": 1652
+  },
+  {
+    "viewport": "mobile-sm",
+    "vw": 320,
+    "page": "03-procedimientos",
+    "overflowX": false,
+    "scrollW": 320,
+    "clientW": 320,
+    "scrollH": 669
+  },
+  {
+    "viewport": "mobile-sm",
+    "vw": 320,
+    "page": "04-errores",
+    "overflowX": false,
+    "scrollW": 320,
+    "clientW": 320,
+    "scrollH": 669
+  },
+  {
+    "viewport": "mobile-sm",
+    "vw": 320,
+    "page": "05-documentacion",
+    "overflowX": false,
+    "scrollW": 320,
+    "clientW": 320,
+    "scrollH": 669
+  },
+  {
+    "viewport": "mobile-sm",
+    "vw": 320,
+    "page": "06-logs",
+    "overflowX": false,
+    "scrollW": 320,
+    "clientW": 320,
+    "scrollH": 2388
+  },
+  {
+    "viewport": "mobile-sm",
+    "vw": 320,
+    "page": "07-usuarios",
+    "overflowX": false,
+    "scrollW": 320,
+    "clientW": 320,
+    "scrollH": 568
+  },
+  {
+    "viewport": "mobile-sm",
+    "vw": 320,
+    "page": "08-perfil",
+    "overflowX": false,
+    "scrollW": 320,
+    "clientW": 320,
+    "scrollH": 676
+  }
+]

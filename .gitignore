@@ -22,3 +22,6 @@ Builds
 Electron / empaquetado
 dist-electron/
 dist-electron_temp/
+
+# Auditoria responsive (screenshots generados)
+frontend/responsive-audit/*.png
