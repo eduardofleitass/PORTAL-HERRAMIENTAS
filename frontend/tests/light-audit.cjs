@@ -16,8 +16,8 @@ const PAGES = ['#/', '#/procedimientos', '#/errores', '#/documentacion', '#/logs
   await page.goto(`${BASE}/#/login`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(900);
   const inputs = await page.$$('input');
-  await inputs[0].fill('admin');
-  await (await page.$('input[type="password"]')).fill('admin');
+  await inputs[0].fill(process.env.PORTAL_USER || 'admin');
+  await (await page.$('input[type="password"]')).fill(process.env.PORTAL_PASS || process.env.PORTAL_USER || 'admin');
   await page.click('button[type="submit"]');
   await page.waitForTimeout(2200);
 

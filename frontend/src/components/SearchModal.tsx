@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, X, FileText, AlertCircle, ClipboardList, Loader } from "lucide-react";
 import { api } from "../config/api";
+import { useAuth } from "../context/AuthContext";
 
 interface Resultado {
   id: number;
@@ -14,19 +15,28 @@ interface Resultado {
 
 function SearchModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const navigate = useNavigate();
+  const { token } = useAuth();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [resultados, setResultados] = useState<Resultado[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Los endpoints estan protegidos con AuthGuard + ModuloGuard: sin el header
+  // Authorization responden 401 y SessionInterceptor cierra la sesion (se veia
+  // como "me desconecta por inactividad al buscar").
+  const headers = useCallback(
+    (): HeadersInit => (token ? { Authorization: "Bearer " + token } : {}),
+    [token],
+  );
 
   const buscar = useCallback(async (texto: string) => {
     if (!texto.trim()) { setResultados([]); return; }
     setLoading(true);
     try {
       const [docRes, errRes, procRes] = await Promise.all([
-        fetch(api("/documentacion")),
-        fetch(api("/errores")),
-        fetch(api("/procedimientos")),
+        fetch(api("/documentacion"), { headers: headers() }),
+        fetch(api("/errores"), { headers: headers() }),
+        fetch(api("/procedimientos"), { headers: headers() }),
       ]);
       const documentos = docRes.ok ? await docRes.json() : [];
       const errores = errRes.ok ? await errRes.json() : [];
@@ -50,7 +60,14 @@ function SearchModal({ visible, onClose }: { visible: boolean; onClose: () => vo
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [headers]);
+
+  // Re-ejecutar la busqueda si cambia el token (p. ej. tras renovarlo),
+  // para no quedarse con resultados vacios por un 401 previo.
+  useEffect(() => {
+    if (visible && query.trim()) buscar(query);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   useEffect(() => {
     if (visible) {

@@ -45,8 +45,8 @@ const BASE = 'http://localhost:5174';
     const allInputs = await page.$$('input');
     const passInput = await page.$('input[type="password"]');
     if (allInputs.length >= 2 && passInput) {
-      await allInputs[0].fill('admin');
-      await passInput.fill('admin');
+      await allInputs[0].fill(process.env.PORTAL_USER || 'admin');
+      await passInput.fill(process.env.PORTAL_USER || 'admin');
       await page.click('button[type="submit"]');
       await page.waitForTimeout(2000);
     }

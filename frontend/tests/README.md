@@ -93,6 +93,28 @@ varias pestanas comparten el mismo estado: usar una mantiene vivas las demas.
 tras 3 minutos reales sin ninguna interaccion (mouse, teclado, scroll, touch).
 
 
+### `regression-buscador.cjs` — Buscador global (9 checks)
+
+```bash
+node regression-buscador.cjs
+```
+
+Valida que el buscador global (Ctrl+K) no expulse la sesion.
+
+Cubre:
+- El buscador abre y acepta texto
+- Las 3 peticiones que hace (`/documentacion`, `/errores`, `/procedimientos`)
+  llevan el header `Authorization`
+- Ninguna devuelve 401
+- **La sesion sigue viva despues de buscar** (el bug reportado)
+- El buscador devuelve resultados
+- Sin 401 inesperados que disparen el cierre de sesion
+
+**Contexto**: `SearchModal` hacia los fetch sin el token. Como esos endpoints
+estan protegidos con `AuthGuard` + `ModuloGuard`, respondian 401 y
+`SessionInterceptor` lo interpretaba como sesion expirada, echando al usuario al
+login. Se veia como "me desconecta por inactividad al buscar".
+
 ### `regression-logs-filtros.cjs` — Filtros clickeables de Actividad (18 checks)
 
 ```bash
@@ -136,6 +158,29 @@ TOTAL: 31 | PASS: 31 | FAIL: 0
 ```
 
 Exit code 0 = todo pasa, 1 = hay fallos (utile para CI).
+
+## Credenciales de los tests
+
+Las suites leen el usuario y la contrasena de variables de entorno, porque la
+contrasena del admin se define en el despliegue y ya no es `admin`/`admin`:
+
+| Variable | Por defecto | Descripcion |
+|---|---|---|
+| `PORTAL_USER` | `admin` | Usuario para los tests |
+| `PORTAL_PASS` | valor de `PORTAL_USER` | Contrasena (si difiere del usuario) |
+| `BASE` | segun la suite | URL a probar (`http://localhost:5174` en dev, `http://localhost:3001` en produccion) |
+
+```bash
+# Desarrollo (Vite en 5174)
+PORTAL_USER=admin PORTAL_PASS=tucontrasena node regression-test.cjs
+
+# Produccion (backend sirviendo el frontend en 3001)
+BASE=http://localhost:3001 PORTAL_USER=admin PORTAL_PASS=tucontrasena node regression-buscador.cjs
+```
+
+**Ojo con el rate limiting**: cada suite hace varios logins y el backend permite 5
+por minuto por IP. Correr varias suites seguidas puede dar `429`. Ver la nota de
+abajo para subir el limite mientras se testea.
 
 ## Notas
 

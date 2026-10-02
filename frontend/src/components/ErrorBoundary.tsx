@@ -33,9 +33,13 @@ class ErrorBoundary extends Component<Props, State> {
     console.error("[ErrorBoundary] Error capturado:", error);
     console.error("[ErrorBoundary] Componente:", info.componentStack);
 
-    // Registrar en el backend (best-effort, no bloquea)
+    // Registrar en el backend (best-effort, no bloquea).
+    // Usa /logs/frontend, un endpoint publico: la barrera debe poder reportar
+    // un error aunque la sesion haya expirado (un crash en el login, por
+    // ejemplo). Con /logs (protegido) el reporte se perdia con un 404 y ademas
+    // un 401 disparaba el cierre de sesion.
     try {
-      fetch(api("/logs"), {
+      fetch(api("/logs/frontend"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

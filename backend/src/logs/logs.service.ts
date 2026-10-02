@@ -60,6 +60,9 @@ export class LogsService {
     };
   }
 
+  /** Maximo de entradas conservadas; las mas viejas se descartan */
+  private static readonly MAX_ENTRADAS = 2000;
+
   create(entry: Omit<LogEntry, 'id' | 'fecha'>): LogEntry {
     const logs = this.readAll();
     const nuevo: LogEntry = {
@@ -68,6 +71,14 @@ export class LogsService {
       fecha: new Date().toISOString(),
     };
     logs.push(nuevo);
+
+    // Rotacion: sin esto logs.json crece sin limite. El interceptor registra
+    // cada POST/PATCH/DELETE, y el endpoint publico /logs/frontend acepta
+    // reportes sin sesion, asi que el archivo podria crecer indefinidamente.
+    if (logs.length > LogsService.MAX_ENTRADAS) {
+      logs.splice(0, logs.length - LogsService.MAX_ENTRADAS);
+    }
+
     this.writeAll(logs);
     return nuevo;
   }

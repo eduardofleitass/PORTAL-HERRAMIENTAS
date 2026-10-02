@@ -293,7 +293,9 @@ Base: `http://localhost:3001`
 | PATCH | `/documentacion/:id` | Acción `editar` |
 | DELETE | `/documentacion/:id` | Acción `eliminar` |
 | GET | `/logs` | Módulo `actividad` |
+| GET | `/logs/resumen` | Módulo `actividad` |
 | DELETE | `/logs` | Módulo `actividad` |
+| POST | `/logs/frontend` | **Público** — reporta errores del frontend |
 | GET | `/usuarios` | Módulo `usuarios` |
 | GET | `/usuarios/:id` | Módulo `usuarios` (o el propio `:id`) |
 | POST | `/usuarios` | Módulo `usuarios` |
@@ -431,6 +433,7 @@ cd frontend/tests
 | `regression-test.cjs` | 31 | Autenticación, permisos, botones PDF/CSV, exportación, sidebar móvil, responsive, errores JS |
 | `regression-permisos.cjs` | 15 | Permisos granulares con un usuario temporal; lo elimina al terminar |
 | `regression-logs-filtros.cjs` | 18 | Filtros interactivos del módulo Actividad |
+| `regression-buscador.cjs` | 9 | Buscador global: no expulsa la sesión |
 | `regression-sesion.cjs` | 13 | Sesión deslizante y expiración por inactividad |
 | `responsive-audit.cjs` | — | Detecta desbordamiento horizontal en 4 tamaños y genera capturas |
 | `light-audit.cjs` | — | Capturas de las 7 páginas en modo claro |

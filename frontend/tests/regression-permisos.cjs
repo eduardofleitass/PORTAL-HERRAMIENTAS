@@ -29,7 +29,10 @@ function check(name, ok, detail = '') {
     // ===== Crear usuario de prueba via API (admin) =====
     const loginAdmin = await fetch(`${API}/auth/login`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: 'admin', password: 'admin' })
+      body: JSON.stringify({
+        username: process.env.PORTAL_USER || 'admin',
+        password: process.env.PORTAL_PASS || process.env.PORTAL_USER || 'admin',
+      })
     });
     const adminData = await loginAdmin.json();
     const adminToken = adminData.token;

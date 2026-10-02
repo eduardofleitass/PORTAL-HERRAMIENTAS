@@ -43,7 +43,7 @@ const BASE = process.env.BASE || 'http://192.168.34.67:3001';
     await browser.close();
     process.exit(1);
   }
-  await inputs[0].fill('admin');
+  await inputs[0].fill(process.env.PORTAL_USER || 'admin');
   await (await page.$('input[type="password"]')).fill(process.env.PW || 'admin');
   await page.click('button[type="submit"]');
   await page.waitForTimeout(3000);

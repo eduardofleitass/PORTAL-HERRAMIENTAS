@@ -19,7 +19,7 @@ function check(name, ok, detail = '') {
   console.log(`${ok ? 'PASS' : 'FAIL'} | ${name}${detail ? ' :: ' + detail : ''}`);
 }
 
-async function login(page, user = 'admin', pass = 'admin') {
+async function login(page, user = process.env.PORTAL_USER || 'admin', pass = process.env.PORTAL_PASS || process.env.PORTAL_USER || 'admin') {
   await page.goto(`${BASE}/#/login`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(900);
 
@@ -105,7 +105,7 @@ async function login(page, user = 'admin', pass = 'admin') {
   {
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const page = await ctx.newPage();
-    const ok = await login(page, 'admin', 'passwordincorrecto');
+    const ok = await login(page, process.env.PORTAL_USER || 'admin', 'passwordincorrecto');
     check('Login con password incorrecta es rechazado', !ok);
     await ctx.close();
   }
@@ -113,10 +113,13 @@ async function login(page, user = 'admin', pass = 'admin') {
   // ===== 3. PERMISOS / BACKEND =====
   console.log('\n===== 3. PERMISOS BACKEND =====');
   {
-    // Obtener token admin
+    // Obtener token admin (credenciales configurables por entorno)
     const r = await fetch(`${API}/auth/login`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: 'admin', password: 'admin' })
+      body: JSON.stringify({
+        username: process.env.PORTAL_USER || 'admin',
+        password: process.env.PORTAL_PASS || process.env.PORTAL_USER || 'admin',
+      })
     });
     const data = await r.json();
     const token = data.token;
