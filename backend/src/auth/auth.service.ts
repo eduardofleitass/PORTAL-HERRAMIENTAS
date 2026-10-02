@@ -128,7 +128,7 @@ export class AuthService {
       username: usuario.username,
       rol: usuario.rol,
     };
-    const token = jwt.sign(payload, this.jwtSecret, { expiresIn: '8h' });
+    const token = jwt.sign(payload, this.jwtSecret, { expiresIn: '3m' });
     const { password: _, ...usuarioSinPassword } = usuario;
     return { token, usuario: usuarioSinPassword };
   }

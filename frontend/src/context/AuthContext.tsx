@@ -102,9 +102,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    checkExpired(); // verificar inmediatamente
-    const interval = setInterval(checkExpired, 60000); // cada 60s
+    checkExpired();
+    const interval = setInterval(checkExpired, 60000);
     return () => clearInterval(interval);
+  }, [token]);
+
+  // Cerrar sesion por inactividad (3 minutos sin interaccion)
+  useEffect(() => {
+    if (!token) return;
+
+    const INACTIVIDAD_MS = 3 * 60 * 1000; // 3 minutos
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    function resetTimer() {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        logoutWithMessage("Sesion cerrada por inactividad. Inicie sesion nuevamente.");
+      }, INACTIVIDAD_MS);
+    }
+
+    const eventos = ["mousedown", "mousemove", "keydown", "scroll", "touchstart", "click"];
+    eventos.forEach((e) => document.addEventListener(e, resetTimer));
+    resetTimer(); // iniciar
+
+    return () => {
+      clearTimeout(timeoutId);
+      eventos.forEach((e) => document.removeEventListener(e, resetTimer));
+    };
   }, [token]);
 
   return (
