@@ -112,22 +112,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!token) return;
 
     const INACTIVIDAD_MS = 3 * 60 * 1000; // 3 minutos
-    let timeoutId: ReturnType<typeof setTimeout>;
+    let lastActivity = Date.now();
 
     function resetTimer() {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        logoutWithMessage("Sesion cerrada por inactividad. Inicie sesion nuevamente.");
-      }, INACTIVIDAD_MS);
+      lastActivity = Date.now();
     }
 
-    const eventos = ["mousedown", "mousemove", "keydown", "scroll", "touchstart", "click"];
-    eventos.forEach((e) => document.addEventListener(e, resetTimer));
-    resetTimer(); // iniciar
+    function checkInactivity() {
+      if (Date.now() - lastActivity >= INACTIVIDAD_MS) {
+        logoutWithMessage("Sesion cerrada por inactividad. Inicie sesion nuevamente.");
+      }
+    }
+
+    const eventos = ["mousedown", "keydown", "scroll", "touchstart", "click"];
+    eventos.forEach((e) => window.addEventListener(e, resetTimer));
+    const interval = setInterval(checkInactivity, 10000); // chequear cada 10s
 
     return () => {
-      clearTimeout(timeoutId);
-      eventos.forEach((e) => document.removeEventListener(e, resetTimer));
+      clearInterval(interval);
+      eventos.forEach((e) => window.removeEventListener(e, resetTimer));
     };
   }, [token]);
 
