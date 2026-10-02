@@ -45,7 +45,17 @@ Cubre:
 node responsive-audit.cjs
 ```
 
-Recorre 8 pantallas x 4 viewports, detecta overflow horizontal y genera screenshots en `responsive-audit/`.
+Recorre 7 pantallas x 4 viewports (1440 / 820 / 390 / 320 px), detecta overflow
+horizontal y genera capturas en `responsive-audit/`.
+
+### `light-audit.cjs` — Capturas en modo claro
+
+```bash
+node light-audit.cjs
+```
+
+Recorre las 7 pantallas forzando el tema claro y genera capturas en
+`light-audit/`, util para revisar contrastes y legibilidad.
 
 
 ### `regression-sesion.cjs` — Sesion deslizante (13 checks)
@@ -129,6 +139,24 @@ Exit code 0 = todo pasa, 1 = hay fallos (utile para CI).
 
 ## Notas
 
-- Credenciales de prueba: `admin` / `admin` (solo entorno local de desarrollo).
-- Los tests crean/borran datos temporales y restauran el estado original.
-- Duracion aproximada: regression-test ~2-3 min, regression-permisos ~1 min.
+- **Rate limiting:** el backend limita a 5 intentos de login por IP por minuto.
+  Las suites hacen muchos logins, asi que los helpers `login()` esperan y
+  reintentan cuando reciben un 429. Para correr todo seguido sin demoras se
+  puede subir el limite en `backend/.env`:
+
+  ```
+  LOGIN_MAX_INTENTOS=100
+  ```
+
+- **Credenciales de prueba:** `admin` / `admin` en el entorno local. Si
+  `usuarios.json` se regenero, la contrasena es la aleatoria que se mostro
+  una vez en la consola del backend.
+
+- Los tests crean y borran datos temporales, y restauran el estado original
+  (por ejemplo `regression-permisos` hace respaldo de `usuarios.json`).
+
+- **Duracion total:** ~15 min. `regression-sesion` sola tarda ~5 min porque
+  espera mas de 3 minutos reales para verificar la expiracion por inactividad.
+
+- `regression-logs-filtros` y `regression-sesion` necesitan que el backend
+  tenga datos de actividad; con una base vacia algunos checks se saltan.
