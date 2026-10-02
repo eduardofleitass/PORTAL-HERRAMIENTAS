@@ -5338,3 +5338,42 @@ tr.usuario-inactivo td {
 :root[data-theme="light"] .btn-limpiar-filtros:hover {
   background: rgba(163, 74, 68, 0.08);
 }
+
+/* ============================================
+   CENTRADO DE CONTENIDO (fix 2026-10-02)
+   ============================================
+   Al colapsar el sidebar el area de contenido se ensancha, y los contenedores
+   quedaban pegados a la izquierda con todo el aire acumulado a la derecha.
+
+   Causa: los contenedores de cada pagina tienen `max-width` (1200px) pero sin
+   `margin-inline: auto`, asi que el bloque toma el ancho maximo y se alinea al
+   inicio del contenedor flex. `.perfil-page` ademas tenia `margin-left: 0`
+   explicito, que anulaba cualquier centrado.
+
+   Fix: centrar horizontalmente todos los contenedores de contenido.
+   Va al final del archivo a proposito, para ganarle a las reglas previas
+   (varias estan dentro de media queries mobile mas abajo en el archivo).
+   En mobile no tiene efecto porque el contenido ocupa el 100% del ancho.
+   ============================================ */
+.dashboard-container,
+.procedimientos-page,
+.errores-page,
+.documentacion-page,
+.logs-page,
+.page-container,
+.perfil-page {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Perfil tenia margin-left: 0 explicito; ahora centrado como el resto */
+.perfil-page {
+  margin-left: auto;
+}
+
+/* El dashboard tambien contiene la grilla de tarjetas y los graficos,
+   que deben acompañar el centrado del contenedor */
+.dashboard-container > .cards-grid,
+.dashboard-container > .dashboard-charts {
+  width: 100%;
+}

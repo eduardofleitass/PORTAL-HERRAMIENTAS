@@ -93,6 +93,18 @@ varias pestanas comparten el mismo estado: usar una mantiene vivas las demas.
 tras 3 minutos reales sin ninguna interaccion (mouse, teclado, scroll, touch).
 
 
+### `diagnostico-layout.cjs` — Centrado del contenido
+
+```bash
+PORTAL_USER=admin PORTAL_PASS=tucontrasena node diagnostico-layout.cjs
+```
+
+Recorre las 7 páginas y mide el contenedor raíz de cada una con el sidebar
+abierto y colapsado. Reporta si el contenido queda centrado (izquierda y derecha
+equilibradas) y falla con exit code 1 si alguna página queda descentrada.
+
+Útil tras tocar el layout: detecta en segundos lo que a ojo cuesta ver.
+
 ### `regression-buscador.cjs` — Buscador global (9 checks)
 
 ```bash
